@@ -3,9 +3,7 @@
         <file>resource/image/avatar.jpg</file>
         <file>resource/image/more/settings-outline.svg</file>
         <file>resource/image/more/power-outline.svg</file>
-        <file>resource/image/about/document-text-outline.svg</file>
         <file>resource/image/about/logo-github.svg</file>
-        <file>resource/image/about/logo.png</file>
         <file>resource/image/chat/add-outline.png</file>
         <file>resource/image/chat/sessionPoup/arrow-up-circle-outline.png</file>
         <file>resource/image/chat/sessionPoup/browsers-outline.png</file>
@@ -28,5 +26,8 @@
         <file>resource/image/logo/Ocean_gray.png</file>
         <file>resource/image/logo/Ocean_hasBackground.png</file>
         <file>resource/image/logo/OceanLink.png</file>
+        <file>resource/image/about/code-slash-outline.png</file>
+        <file>resource/image/about/easel-outline.png</file>
+        <file>resource/image/about/shield-checkmark-outline.png</file>
     </qresource>
 </RCC>
