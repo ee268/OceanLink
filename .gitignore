@@ -1,0 +1,6 @@
+# 构建
+/build
+
+# QtCreator
+*.autosave
+CMakeLists.txt.user*

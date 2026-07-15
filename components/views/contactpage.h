@@ -1,0 +1,39 @@
+#ifndef CONTACTPAGE_H
+#define CONTACTPAGE_H
+
+#include "basepage.h"
+
+#include "ElaSuggestBox.h"
+#include "ElaContentDialog.h"
+
+#include "../controls/contactlist.h"
+#include "../controls/friendnotifylist.h"
+#include "../controls/confirmdialog.h"
+
+class ContactPage : public BasePage
+{
+    Q_OBJECT
+public:
+    explicit ContactPage(QWidget* parent = nullptr);
+    ~ContactPage();
+
+private:
+    void initLeftWidget();
+    void initRightWidget();
+
+private:
+    ElaSuggestBox* _suggestBox;
+
+    ContactList* _contactList;
+
+    FriendNotifyList* _notifyList;
+
+    ConfirmDialog* _clearConfirmDialog;
+
+private slots:
+    void slotClearButtonClicked();
+
+    void slotClearAllNotify();
+};
+
+#endif // CONTACTPAGE_H

@@ -1,0 +1,32 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resource/image/avatar.jpg</file>
+        <file>resource/image/more/settings-outline.svg</file>
+        <file>resource/image/more/power-outline.svg</file>
+        <file>resource/image/about/document-text-outline.svg</file>
+        <file>resource/image/about/logo-github.svg</file>
+        <file>resource/image/about/logo.png</file>
+        <file>resource/image/chat/add-outline.png</file>
+        <file>resource/image/chat/sessionPoup/arrow-up-circle-outline.png</file>
+        <file>resource/image/chat/sessionPoup/browsers-outline.png</file>
+        <file>resource/image/chat/sessionPoup/checkmark-circle-outline.png</file>
+        <file>resource/image/chat/sessionPoup/copy-outline.png</file>
+        <file>resource/image/chat/sessionPoup/trash-outline.png</file>
+        <file>resource/image/chat/sessionPoup/ban-outline.png</file>
+        <file>resource/image/chat/sessionPoup/notifications-off-outline.png</file>
+        <file>resource/image/chat/sessionPoup/notifications-outline.png</file>
+        <file>resource/image/chat/ellipse-gray.svg</file>
+        <file>resource/image/chat/ellipse-green.svg</file>
+        <file>resource/image/chat/function/folder-outline.png</file>
+        <file>resource/image/chat/function/happy-outline.png</file>
+        <file>resource/image/chat/function/image-outline.png</file>
+        <file>resource/image/chat/function/time-outline.png</file>
+        <file>resource/image/chat/msgPopup/arrow-redo-outline.png</file>
+        <file>resource/image/chat/msgPopup/bookmark-outline.png</file>
+        <file>resource/image/contact/chevron-forward-outline.png</file>
+        <file>resource/image/logo/Ocean.png</file>
+        <file>resource/image/logo/Ocean_gray.png</file>
+        <file>resource/image/logo/Ocean_hasBackground.png</file>
+        <file>resource/image/logo/OceanLink.png</file>
+    </qresource>
+</RCC>
