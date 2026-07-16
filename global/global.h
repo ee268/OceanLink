@@ -15,4 +15,11 @@ enum FriendNotifyStatus {
     WaitingPassed       //等待通过
 };
 
+//性别
+enum Sex{
+    Female,
+    Male,
+    Secret
+};
+
 #endif // GLOBAL_H

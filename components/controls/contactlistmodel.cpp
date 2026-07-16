@@ -66,6 +66,14 @@ QVariant ContactListModel::data(const QModelIndex &index, int role) const
         return node->isGroupItem;
     case Avatar:
         return node->avatar;
+    case Age:
+        return node->age;
+    case Birthday:
+        return node->birthday;
+    case Account:
+        return node->account;
+    case Sex:
+        return node->sex;
     default:
         return QVariant();
     }
@@ -80,20 +88,22 @@ void ContactListModel::addGroup(const QString& groupName)
     }
 
     int row = static_cast<int>(_root->children.size());
+
     beginInsertRows(QModelIndex(), row, row);
-    auto group = std::make_unique<ContactData>(groupName, "", false, groupName, "", true, QPixmap(), _root.get());
+
+    auto group = std::make_unique<ContactData>(
+        groupName, "", false, groupName, "", true, 0, "", "", 0, QPixmap(), _root.get());
     _root->children.push_back(std::move(group));
+
     endInsertRows();
 }
 
-void ContactListModel::addContact(const QString& name, const QString& sign, bool status,
-                                   const QString& group, const QString& nickname,
-                                   const QPixmap& avatar)
+void ContactListModel::addContact(const ContactData& contact)
 {
     // 查找分组（通过isGroupItem判断）
     ContactData* groupNode = nullptr;
     for (const auto& child : _root->children) {
-        if (child->isGroupItem && child->name == group) {
+        if (child->isGroupItem && child->name == contact.group) {
             groupNode = child.get();
             break;
         }
@@ -101,15 +111,21 @@ void ContactListModel::addContact(const QString& name, const QString& sign, bool
 
     // 如果分组不存在，自动创建
     if (!groupNode) {
-        addGroup(group);
+        addGroup(contact.group);
         groupNode = _root->children.back().get();
     }
 
     QModelIndex groupIndex = createIndex(getRow(groupNode), 0, groupNode);
     int row = static_cast<int>(groupNode->children.size());
+
     beginInsertRows(groupIndex, row, row);
-    auto contact = std::make_unique<ContactData>(name, sign, status, group, nickname, false, avatar, groupNode);
-    groupNode->children.push_back(std::move(contact));
+
+    auto newContact = std::make_unique<ContactData>(
+        contact.name, contact.sign, contact.status, contact.group,
+        contact.nickname, false, contact.age, contact.birthday,
+        contact.account, contact.sex, contact.avatar, groupNode);
+    groupNode->children.push_back(std::move(newContact));
+
     endInsertRows();
 }
 

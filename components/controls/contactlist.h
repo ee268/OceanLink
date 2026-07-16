@@ -16,6 +16,12 @@ public:
 private:
     ContactListModel* _model;
     ContactListDelegate* _delegate;
+
+signals:
+    void sigContactClicked(const QModelIndex& index);
+
+private slots:
+    void slotContactClicked(const QModelIndex& index);
 };
 
 #endif // CONTACTLIST_H

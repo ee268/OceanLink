@@ -12,6 +12,7 @@ IconText::IconText(QWidget *parent/* = nullptr*/)
 IconText::IconText(const QString &text, QWidget *parent/* = nullptr*/)
     : QLabel(text, parent)
     , _spacing(4)
+    , _b_iconThemeColor(true)
 {
     initText();
 }
@@ -52,11 +53,19 @@ void IconText::setSpacing(int spacing)
 void IconText::setTextColorDark(const QColor &color)
 {
     _textColorDark = color;
+    update();
 }
 
 void IconText::setTextColorLight(const QColor &color)
 {
     _textColorLight = color;
+    update();
+}
+
+void IconText::setIconThemeColor(bool enable)
+{
+    _b_iconThemeColor = enable;
+    update();
 }
 
 void IconText::setIcon(const QIcon &icon)
@@ -97,10 +106,7 @@ void IconText::paintEvent(QPaintEvent * event)
         QPixmap pixmap = _icon.pixmap(size, size);
         QPainter pmPainter(&pixmap);
         pmPainter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-        if (_textColor.isValid()) {
-            pmPainter.fillRect(pixmap.rect(), _textColor);
-        }
-        else {
+        if (_b_iconThemeColor) {
             pmPainter.fillRect(pixmap.rect(), ElaThemeColor(eTheme->getThemeMode(), BasicText));
         }
         pmPainter.end();

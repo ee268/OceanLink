@@ -2,11 +2,17 @@
 
 #include <QVBoxLayout>
 #include <QApplication>
+#include <QPainterPath>
+#include <QPainter>
 
 #include "ElaPushButton.h"
 #include "ElaText.h"
 
 #include "../controls/iconbutton.h"
+#include "../controls/contactlistmodel.h"
+#include "../controls/splitline.h"
+
+#include "../../global/global.h"
 
 ContactPage::ContactPage(QWidget *parent/* = nullptr*/)
     : BasePage(parent)
@@ -46,6 +52,8 @@ void ContactPage::initLeftWidget()
     checkNotifyButton->setFixedWidth(checkNotifyButton->width() + 40 + 6);
     checkNotifyButton->setFixedHeight(checkNotifyButton->height() + 2);
     checkNotifyButton->setBorderRadius(6);
+
+    connect(checkNotifyButton, &ElaPushButton::clicked, this, &ContactPage::slotNotifyButtonClicked);
 
     subLayout->setContentsMargins(10, 10, 10, 10);
     subLayout->setSpacing(10);
@@ -129,7 +137,6 @@ void ContactPage::initRightWidget()
     rightWid->setLayout(mainLayout);
 
     stackedWid->addWidget(rightWid);
-    stackedWid->setCurrentIndex(1);
 
     _clearConfirmDialog = new ConfirmDialog(this);
     _clearConfirmDialog->setTitleText("清空好友通知");
@@ -139,6 +146,18 @@ void ContactPage::initRightWidget()
 
     connect(_clearConfirmDialog, &ConfirmDialog::rightButtonClicked,
             this, &ContactPage::slotClearAllNotify);
+
+    initContactDetailWid();
+}
+
+void ContactPage::initContactDetailWid()
+{
+    QStackedWidget* stackedWid = this->getStackedWidget();
+    _detailWid = new ContactDetailWid(this);
+
+    connect(_contactList, &ContactList::sigContactClicked, this, &ContactPage::slotToContactDetail);
+
+    stackedWid->addWidget(_detailWid);
 }
 
 void ContactPage::slotClearButtonClicked()
@@ -149,4 +168,242 @@ void ContactPage::slotClearButtonClicked()
 void ContactPage::slotClearAllNotify()
 {
     _notifyList->clear();
+}
+
+void ContactPage::slotNotifyButtonClicked()
+{
+    this->getStackedWidget()->setCurrentIndex(1);
+}
+
+void ContactPage::slotToContactDetail(const QModelIndex &index)
+{
+    _detailWid->setIndex(index);
+    this->getStackedWidget()->setCurrentIndex(2);
+}
+
+ContactDetailWid::ContactDetailWid(QWidget *parent)
+    : QWidget(parent)
+    , _avatar(nullptr)
+{
+    initContent();
+}
+
+void ContactDetailWid::setIndex(const QModelIndex &index)
+{
+    _index = index;
+    updateInfo();
+}
+
+void ContactDetailWid::initContent()
+{
+    QVBoxLayout* vLayout = new QVBoxLayout(this);
+
+    _centralWid = new QWidget(this);
+    _centralWid->setFixedWidth(600);
+
+    vLayout->addWidget(_centralWid, 0, Qt::AlignCenter);
+    this->setLayout(vLayout);
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(_centralWid);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(8);
+
+    SplitLine* line1 = new SplitLine(_centralWid);
+    line1->setFixedHeight(1);
+
+    initCard();
+
+    initAccountInfo();
+
+    mainLayout->addWidget(line1);
+
+    initPersonalInfo();
+
+    mainLayout->addStretch();
+
+    _centralWid->setLayout(mainLayout);
+}
+
+void ContactDetailWid::initCard()
+{
+    _card = new DisplayCard(_centralWid);
+    _card->setBorderRadius(5);
+    _card->setCardPixmap(QPixmap(":/resource/image/rupa.jpg"));
+    _card->setFixedHeight(300);
+
+    _centralWid->layout()->addWidget(_card);
+}
+
+void ContactDetailWid::initAccountInfo()
+{
+    //头像、昵称、账号、状态
+    _avatar = new AvatarWid(_centralWid);
+    _avatar->setFixedSize(62, 62);
+
+    QWidget* subWid = new QWidget(_centralWid);
+    QVBoxLayout* subLayout = new QVBoxLayout(subWid);
+
+    _name = new ElaText(_centralWid);
+    QFont f = _name->font();
+    f.setBold(true);
+    f.setPixelSize(14);
+    _name->setFont(f);
+
+    _account = new IconText(_centralWid);
+    _account->setPixelSize(12);
+
+    _status = new IconText(_centralWid);
+    _status->setPixelSize(13);
+    _status->setIconThemeColor(false);
+    _status->setTextColorLight(Qt::black);
+    _status->setTextColorDark(Qt::white);
+
+    subLayout->setContentsMargins(0, 0, 0, 0);
+    subLayout->setSpacing(0);
+    subLayout->addWidget(_name);
+    subLayout->addWidget(_account);
+    subLayout->addWidget(_status);
+    subWid->setLayout(subLayout);
+    subWid->setFixedHeight(_avatar->height());
+
+    QWidget* baseInfoWid = new QWidget(_centralWid);
+    QHBoxLayout* baseInfoLayout = new QHBoxLayout(baseInfoWid);
+    baseInfoLayout->setContentsMargins(0, 5, 0, 5);
+    baseInfoLayout->setSpacing(6);
+    baseInfoLayout->addWidget(_avatar);
+    baseInfoLayout->addWidget(subWid);
+    baseInfoWid->setLayout(baseInfoLayout);
+    baseInfoWid->setFixedHeight(_avatar->height() + 10);
+
+    _centralWid->layout()->addWidget(baseInfoWid);
+}
+
+void ContactDetailWid::initPersonalInfo()
+{
+    //性别，年龄，生日
+    QWidget* pWid = new QWidget(_centralWid);
+    QHBoxLayout* pLayout = new QHBoxLayout(pWid);
+    pLayout->setContentsMargins(0, 0, 0, 0);
+    pLayout->setSpacing(5);
+
+    _sexText = new IconText(_centralWid);
+    _sexText->setTextColorLight(Qt::black);
+    _sexText->setTextColorDark(Qt::white);
+    _sexText->setIconThemeColor(false);
+    _sexText->setPixelSize(12);
+
+    _ageText = new ElaText(_centralWid);
+    _ageText->setTextPixelSize(12);
+
+    _birthText = new ElaText(_centralWid);
+    _birthText->setTextPixelSize(12);
+
+    QFont f = _sexText->font();
+    QFontMetrics fm(f);
+    SplitLine* vLine1 = new SplitLine(_centralWid);
+    vLine1->setFixedSize(1, fm.height());
+    SplitLine* vLine2 = new SplitLine(_centralWid);
+    vLine2->setFixedSize(vLine1->size());
+
+    pLayout->addWidget(_sexText);
+    pLayout->addWidget(vLine1);
+    pLayout->addWidget(_ageText);
+    pLayout->addWidget(vLine2);
+    pLayout->addWidget(_birthText);
+    pLayout->addStretch();
+    pWid->setLayout(pLayout);
+
+    _centralWid->layout()->addWidget(pWid);
+}
+
+void ContactDetailWid::updateInfo()
+{
+    QPixmap avatar = qvariant_cast<QPixmap>(_index.data(ContactListModel::Avatar));
+    QString name = _index.data(ContactListModel::Name).toString();
+    QString account = _index.data(ContactListModel::Account).toString();
+    QString sign = _index.data(ContactListModel::Sign).toString();
+    bool status = _index.data(ContactListModel::Status).toBool();
+    int sex = _index.data(ContactListModel::Sex).toInt();
+    int age = _index.data(ContactListModel::Age).toInt();
+    QString birthday = _index.data(ContactListModel::Birthday).toString();
+
+    _avatar->setAvatar(avatar);
+    _avatar->setName(name);
+
+    _name->setText(name);
+
+    _account->setText("账号: " + account);
+
+    if (status) {
+        _status->setText("在线");
+        _status->setIcon(QIcon(":/resource/image/chat/ellipse-green.svg"));
+    }
+    else {
+        _status->setText("离线");
+        _status->setIcon(QIcon(":/resource/image/chat/ellipse-gray.svg"));
+    }
+
+    switch (sex) {
+    case Sex::Female:
+        _sexText->setText("女");
+        _sexText->setIcon(QIcon(":/resource/image/contact/detail/female-outline.png"));
+        break;
+    case Sex::Male:
+        _sexText->setText("男");
+        _sexText->setIcon(QIcon(":/resource/image/contact/detail/male-outline.png"));
+        break;
+    case Sex::Secret:
+        _sexText->setText("保密");
+        _sexText->setIcon(QIcon(":/resource/image/contact/detail/male-female-outline.png"));
+        break;
+    default:
+        break;
+    }
+
+    _ageText->setText(QString("%1岁").arg(age));
+    _birthText->setText(birthday);
+}
+
+AvatarWid::AvatarWid(QWidget *parent)
+    : QWidget(parent)
+{
+
+}
+
+void AvatarWid::setAvatar(const QPixmap &pixmap)
+{
+    _avatar = pixmap;
+    update();
+}
+
+void AvatarWid::setName(const QString &name)
+{
+    _name = name;
+    update();
+}
+
+void AvatarWid::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+
+    if (_avatar.isNull()) {
+        painter.setPen(ElaThemeColor(eTheme->getThemeMode(), BasicBorderDeep));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(this->rect().adjusted(1, 1, -1, -1));
+
+        QFont f;
+        f.setBold(true);
+        f.setPixelSize(18);
+        painter.setFont(f);
+        painter.drawText(this->rect(), Qt::AlignCenter, _name.at(0));
+    }
+    else {
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::NoBrush);
+        QPainterPath path;
+        path.addEllipse(this->rect());
+        painter.setClipPath(path);
+        painter.drawPixmap(this->rect(), _avatar);
+    }
 }

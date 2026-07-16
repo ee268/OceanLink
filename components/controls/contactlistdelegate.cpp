@@ -106,6 +106,7 @@ void ContactListDelegate::paintContactItem(QPainter *painter, const QStyleOption
     } else {
         QFont f;
         f.setPixelSize(16);
+        f.setBold(true);
         painter->setFont(f);
         painter->setPen(QPen(ElaThemeColor(eTheme->getThemeMode(), BasicBorderDeep)));
         painter->setBrush(Qt::NoBrush);

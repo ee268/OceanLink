@@ -29,5 +29,9 @@
         <file>resource/image/about/code-slash-outline.png</file>
         <file>resource/image/about/easel-outline.png</file>
         <file>resource/image/about/shield-checkmark-outline.png</file>
+        <file>resource/image/rupa.jpg</file>
+        <file>resource/image/contact/detail/female-outline.png</file>
+        <file>resource/image/contact/detail/male-female-outline.png</file>
+        <file>resource/image/contact/detail/male-outline.png</file>
     </qresource>
 </RCC>

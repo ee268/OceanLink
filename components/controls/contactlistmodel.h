@@ -14,6 +14,10 @@ struct ContactData {
     QString nickname;   //昵称
     bool isGroupItem;   //是否为分组节点
     QPixmap avatar;     //头像
+    int age;
+    int sex;
+    QString birthday;
+    QString account;
 
     ContactData* parent;
     std::vector<std::unique_ptr<ContactData>> children;
@@ -22,13 +26,16 @@ struct ContactData {
 
     ContactData(const QString& name, const QString& sign, bool status,
                 const QString& group, const QString& nickname, 
-                bool isGroupItem, const QPixmap& avatar = QPixmap(), 
-                ContactData* parent = nullptr)
+                bool isGroupItem, int age,
+                const QString& birthday, const QString& account, int sex,
+                const QPixmap& avatar = QPixmap(), ContactData* parent = nullptr)
         : name(name)
         , sign(sign)
         , status(status)
         , group(group)
         , nickname(nickname), isGroupItem(isGroupItem)
+        , age(age), birthday(birthday)
+        , account(account), sex(sex)
         , avatar(avatar), parent(parent)
     {}
 };
@@ -44,7 +51,11 @@ public:
         Group,
         Nickname,
         IsGroup,
-        Avatar
+        Avatar,
+        Age,
+        Birthday,
+        Account,
+        Sex
     };
 
     explicit ContactListModel(QObject *parent = nullptr);
@@ -60,9 +71,7 @@ public:
 
     // 自定义接口
     void addGroup(const QString& groupName);
-    void addContact(const QString& name, const QString& sign, bool status,
-                    const QString& group, const QString& nickname,
-                    const QPixmap& avatar = QPixmap());
+    void addContact(const ContactData& contact);
     void removeContact(const QModelIndex& index);
     QModelIndex getGroupIndex(const QString& groupName) const;
 

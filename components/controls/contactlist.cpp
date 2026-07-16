@@ -32,7 +32,29 @@ ContactList::ContactList(QWidget *parent)
             bool status = (j % 2 == 0);  // 偶数在线，奇数离线
             QString nickname = name;
 
-            _model->addContact(name, sign, status, groups[i], nickname, QPixmap());
+            ContactData data;
+            data.name = name;
+            data.sign = sign;
+            data.status = status;
+            data.group = groups[i];
+            data.nickname = nickname;
+            data.age = 23;
+            data.sex = 2;
+            data.birthday = "3月12日";
+            if (status) {
+                data.avatar = QPixmap(":/resource/image/avatar.jpg");
+            }
+            _model->addContact(data);
         }
+    }
+
+    connect(this, &ContactList::clicked, this, &ContactList::slotContactClicked);
+}
+
+void ContactList::slotContactClicked(const QModelIndex &index)
+{
+    bool isGroupItem = index.data(ContactListModel::IsGroup).toBool();
+    if (!isGroupItem) {
+        emit sigContactClicked(index);
     }
 }

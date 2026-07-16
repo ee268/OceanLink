@@ -16,10 +16,14 @@ public:
     void setPixelSize(int size);
     void setTextColor(QColor color);
     void setTextBold(bool enable);
+
     void setIcon(const QIcon& icon);
+    void setIconThemeColor(bool enable);
+
     void setSpacing(int spacing);
+
     void setTextColorDark(const QColor& color);
-    void setTextColorLight(const QColor& color);
+    void setTextColorLight(const QColor& color);    
 
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
@@ -39,6 +43,7 @@ private:
     QColor _textColorLight;
     QColor _textColorDark;
     QColor _textColor;
+    bool _b_iconThemeColor;
 };
 
 #endif // ICONTEXT_H
