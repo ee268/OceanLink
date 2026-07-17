@@ -33,5 +33,8 @@
         <file>resource/image/contact/detail/female-outline.png</file>
         <file>resource/image/contact/detail/male-female-outline.png</file>
         <file>resource/image/contact/detail/male-outline.png</file>
+        <file>resource/image/contact/detail/create-outline.png</file>
+        <file>resource/image/contact/detail/pencil-outline.png</file>
+        <file>resource/image/contact/detail/people-outline.png</file>
     </qresource>
 </RCC>

@@ -41,6 +41,7 @@ private:
     void initCard();
     void initAccountInfo();
     void initPersonalInfo();
+    void initFriendInfo();
 
     void updateInfo();
 
@@ -58,6 +59,13 @@ private:
     IconText* _sexText;
     ElaText* _ageText;
     ElaText* _birthText;
+
+    ElaText* _nickname;
+    ElaText* _friendGroup;
+    ElaText* _sign;
+    ElaText* _space;
+
+    QPixmap _blurredBg;
 };
 
 class ContactPage : public BasePage

@@ -7,12 +7,15 @@
 
 #include "ElaPushButton.h"
 #include "ElaText.h"
+#include "ElaIcon.h"
 
 #include "../controls/iconbutton.h"
 #include "../controls/contactlistmodel.h"
 #include "../controls/splitline.h"
 
 #include "../../global/global.h"
+
+#include "ElaExponentialBlur.h"
 
 ContactPage::ContactPage(QWidget *parent/* = nullptr*/)
     : BasePage(parent)
@@ -201,7 +204,9 @@ void ContactDetailWid::initContent()
     _centralWid = new QWidget(this);
     _centralWid->setFixedWidth(600);
 
+    vLayout->setContentsMargins(0, 30, 0, 0);
     vLayout->addWidget(_centralWid, 0, Qt::AlignCenter);
+    vLayout->addStretch();
     this->setLayout(vLayout);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(_centralWid);
@@ -219,6 +224,8 @@ void ContactDetailWid::initContent()
 
     initPersonalInfo();
 
+    initFriendInfo();
+
     mainLayout->addStretch();
 
     _centralWid->setLayout(mainLayout);
@@ -229,7 +236,7 @@ void ContactDetailWid::initCard()
     _card = new DisplayCard(_centralWid);
     _card->setBorderRadius(5);
     _card->setCardPixmap(QPixmap(":/resource/image/rupa.jpg"));
-    _card->setFixedHeight(300);
+    _card->setFixedHeight(250);
 
     _centralWid->layout()->addWidget(_card);
 }
@@ -314,6 +321,91 @@ void ContactDetailWid::initPersonalInfo()
     pWid->setLayout(pLayout);
 
     _centralWid->layout()->addWidget(pWid);
+}
+
+void ContactDetailWid::initFriendInfo()
+{
+    // 备注、分组、签名、空间
+    QWidget* fWid = new QWidget(_centralWid);
+    QVBoxLayout* fLayout = new QVBoxLayout(fWid);
+    fLayout->setContentsMargins(0, 10, 0, 0);
+    fLayout->setSpacing(12);
+
+    QWidget* nicknameWid = new QWidget(fWid);
+    QHBoxLayout* nicknameLayout = new QHBoxLayout(nicknameWid);
+    nicknameLayout->setContentsMargins(0, 0, 0, 0);
+
+    IconText* nicknameTitle  = new IconText("备注", nicknameWid);
+    nicknameTitle->setIcon(QIcon(":/resource/image/contact/detail/create-outline.png"));
+    nicknameTitle->setTextColorLight(Qt::black);
+    nicknameTitle->setTextColorDark(Qt::white);
+    nicknameTitle->setPixelSize(13);
+    _nickname = new ElaText(nicknameWid);
+    _nickname->setFont(nicknameTitle->font());
+
+    nicknameLayout->addWidget(nicknameTitle);
+    nicknameLayout->addStretch();
+    nicknameLayout->addWidget(_nickname);
+    nicknameWid->setLayout(nicknameLayout);
+
+    QWidget* groupWid = new QWidget(fWid);
+    QHBoxLayout* groupLayout = new QHBoxLayout(groupWid);
+    groupLayout->setContentsMargins(0, 0, 0, 0);
+
+    IconText* groupTitle  = new IconText("好友分组", groupWid);
+    groupTitle->setIcon(QIcon(":/resource/image/contact/detail/people-outline.png"));
+    groupTitle->setTextColorLight(Qt::black);
+    groupTitle->setTextColorDark(Qt::white);
+    groupTitle->setPixelSize(13);
+    _friendGroup = new ElaText(groupWid);
+    _friendGroup->setFont(groupTitle->font());
+
+    groupLayout->addWidget(groupTitle);
+    groupLayout->addStretch();
+    groupLayout->addWidget(_friendGroup);
+    groupWid->setLayout(groupLayout);
+
+    QWidget* signWid = new QWidget(fWid);
+    QHBoxLayout* signLayout = new QHBoxLayout(signWid);
+    signLayout->setContentsMargins(0, 0, 0, 0);
+
+    IconText* signTitle  = new IconText("签名", signWid);
+    signTitle->setIcon(QIcon(":/resource/image/contact/detail/pencil-outline.png"));
+    signTitle->setTextColorLight(Qt::black);
+    signTitle->setTextColorDark(Qt::white);
+    signTitle->setPixelSize(13);
+    _sign = new ElaText(signWid);
+    _sign->setFont(signTitle->font());
+
+    signLayout->addWidget(signTitle);
+    signLayout->addStretch();
+    signLayout->addWidget(_sign);
+    signWid->setLayout(signLayout);
+
+    QWidget* spaceWid = new QWidget(fWid);
+    QHBoxLayout* spaceLayout = new QHBoxLayout(spaceWid);
+    spaceLayout->setContentsMargins(0, 0, 0, 0);
+
+    IconText* spaceTitle  = new IconText("空间", spaceWid);
+    spaceTitle->setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::Blog));
+    spaceTitle->setTextColorLight(Qt::black);
+    spaceTitle->setTextColorDark(Qt::white);
+    spaceTitle->setPixelSize(13);
+    _space = new ElaText(spaceWid);
+    _space->setFont(spaceTitle->font());
+
+    spaceLayout->addWidget(spaceTitle);
+    spaceLayout->addStretch();
+    spaceLayout->addWidget(_space);
+    spaceWid->setLayout(spaceLayout);
+
+    fLayout->addWidget(nicknameWid);
+    fLayout->addWidget(groupWid);
+    fLayout->addWidget(signWid);
+    fLayout->addWidget(spaceWid);
+    fWid->setLayout(fLayout);
+
+    _centralWid->layout()->addWidget(fWid);
 }
 
 void ContactDetailWid::updateInfo()
