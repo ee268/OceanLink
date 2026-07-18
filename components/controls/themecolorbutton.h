@@ -11,6 +11,10 @@ public:
     explicit ThemeColorButton(const QString& text, QWidget* parent = nullptr);
     ~ThemeColorButton() = default;
 
+    void recoverDefault();
+
+    void changeToBasicColor();
+
 private:
     void initButton();
 };

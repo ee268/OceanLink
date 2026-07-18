@@ -75,13 +75,18 @@ public:
 
     void addGroup(const QString& groupName);
     void addContact(const ContactData& contact);
+    void updateContact(const QModelIndex& index);
+    void changeContactGroup(const QModelIndex& index, const QString& newGroup);
     void removeContact(const QModelIndex& index);
     QModelIndex getGroupIndex(const QString& groupName) const;
     QStringList getGroupNames() const;
+    void sortContacts();
+    void sortGroupContacts(const QString& groupName);
 
 private:
     ContactData* getNode(const QModelIndex &index) const;
     int getRow(ContactData *node) const;
+    ContactData* takeContact(const QModelIndex& index);
 
     std::unique_ptr<ContactData> _root;
 };

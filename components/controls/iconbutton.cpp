@@ -6,6 +6,17 @@
 
 #include "ElaTheme.h"
 
+IconButton::IconButton(QWidget *parent)
+    : QPushButton(parent)
+    , _borderRadius(6)
+    , _iconSize(16)
+    , _state(Normal)
+    , _borderWidth(1)
+    , _enableTransparent(false)
+{
+
+}
+
 IconButton::IconButton(QIcon icon, QWidget *parent)
     : QPushButton(parent)
     , _borderRadius(6)
@@ -27,6 +38,12 @@ void IconButton::setBorderRadius(int borderRadius)
 void IconButton::setIconSize(int size)
 {
     _iconSize = size;
+    update();
+}
+
+void IconButton::setIcon(const QIcon &icon)
+{
+    _icon = icon;
     update();
 }
 
@@ -103,6 +120,9 @@ void IconButton::paintEvent(QPaintEvent * event)
         , _borderRadius, _borderRadius);
 
     QPixmap pixmap = _icon.pixmap(_iconSize, _iconSize);
+    if (pixmap.isNull())
+        return;
+
     QPainter pmPainter(&pixmap);
     pmPainter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
     pmPainter.fillRect(pixmap.rect(), ElaThemeColor(mode, BasicText));

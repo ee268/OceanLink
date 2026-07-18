@@ -3,6 +3,9 @@
 
 #include "ElaTreeView.h"
 
+#include "contactlistmodel.h"
+#include "contactlistdelegate.h"
+
 class ContactListModel;
 class ContactListDelegate;
 
@@ -14,6 +17,10 @@ public:
     ~ContactList() = default;
 
     QStringList getGroupNames() const;
+
+    void updateContact(const QModelIndex& index);
+
+    void changeContactGroup(const QModelIndex& index, const QString& newGroup);
 
 private:
     ContactListModel* _model;

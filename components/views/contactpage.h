@@ -6,13 +6,15 @@
 #include "ElaSuggestBox.h"
 #include "ElaText.h"
 #include "ElaComboBox.h"
-#include "ElaIconButton.h"
+#include "ElaLineEdit.h"
 
 #include "../controls/displaycard.h"
 #include "../controls/icontext.h"
 #include "../controls/contactlist.h"
 #include "../controls/friendnotifylist.h"
 #include "../controls/confirmdialog.h"
+#include "../controls/themecolorbutton.h"
+#include "../controls/iconbutton.h"
 
 class AvatarWid : public QWidget
 {
@@ -72,15 +74,26 @@ private:
     ElaText* _ageText;
     ElaText* _birthText;
 
+    QWidget* _nicknameWid;
     ElaText* _nickname;
+    QWidget* _groupWid;
     ElaComboBox* _friendGroup;
     ElaText* _sign;
+    ElaLineEdit* _signLineEdit;
+    IconButton* _signEditButton;
+    bool _signStatus;
     QWidget* _spaceWid;
+
+    ThemeColorButton* _editOrSendButton;
 
     QPixmap _blurredBg;
 
 private slots:
     void slotUpdateCentralWidStyle();
+
+    void slotChangedGroup(const QString& text);
+
+    void slotEditSignText();
 };
 
 class ContactPage : public BasePage

@@ -4,12 +4,13 @@
 #include <QApplication>
 #include <QPainterPath>
 #include <QPainter>
+#include <QDebug>
 
 #include "ElaPushButton.h"
 #include "ElaText.h"
 #include "ElaIcon.h"
+#include "ElaIconButton.h"
 
-#include "../controls/iconbutton.h"
 #include "../controls/contactlistmodel.h"
 #include "../controls/splitline.h"
 
@@ -188,6 +189,7 @@ ContactDetailWid::ContactDetailWid(ContactList* list, QWidget *parent)
     : QWidget(parent)
     , _contactList(list)
     , _avatar(nullptr)
+    , _signStatus(false)
 {
     initContent();
 }
@@ -271,6 +273,34 @@ void ContactDetailWid::slotUpdateCentralWidStyle()
         .arg(ElaThemeColor(mode, BasicBorderDeep).name()));
 }
 
+void ContactDetailWid::slotChangedGroup(const QString &text)
+{
+    _contactList->changeContactGroup(_index, text);
+}
+
+void ContactDetailWid::slotEditSignText()
+{
+    if (!_signStatus) {
+        _signStatus = true;
+        _sign->setHidden(true);
+        _signLineEdit->setHidden(false);
+        _signLineEdit->setText(_sign->text());
+        _signEditButton->setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::FloppyDisk));
+    }
+    else {
+        _signStatus = false;
+        _sign->setHidden(false);
+        _signLineEdit->setHidden(true);
+        _signEditButton->setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::PenToSquare));
+
+        ContactData* data = static_cast<ContactData*>(_index.internalPointer());
+        data->sign = _signLineEdit->text();
+        _sign->setText(_signLineEdit->text());
+
+        _contactList->updateContact(_index);
+    }
+}
+
 void ContactDetailWid::initContent()
 {
     QVBoxLayout* vLayout = new QVBoxLayout(this);
@@ -304,6 +334,10 @@ void ContactDetailWid::initContent()
 
     initFriendInfo();
 
+    _editOrSendButton = new ThemeColorButton(_centralWid);
+    _editOrSendButton->setFixedSize(120, 40);
+
+    mainLayout->addWidget(_editOrSendButton, 0, Qt::AlignHCenter);
     mainLayout->addStretch();
 
     _centralWid->setLayout(mainLayout);
@@ -409,39 +443,41 @@ void ContactDetailWid::initFriendInfo()
     fLayout->setContentsMargins(0, 10, 0, 0);
     fLayout->setSpacing(12);
 
-    QWidget* nicknameWid = new QWidget(fWid);
-    QHBoxLayout* nicknameLayout = new QHBoxLayout(nicknameWid);
+    _nicknameWid = new QWidget(fWid);
+    QHBoxLayout* nicknameLayout = new QHBoxLayout(_nicknameWid);
     nicknameLayout->setContentsMargins(0, 0, 0, 0);
 
-    IconText* nicknameTitle  = new IconText("备注", nicknameWid);
+    IconText* nicknameTitle  = new IconText("备注", _nicknameWid);
     nicknameTitle->setIcon(QIcon(":/resource/image/contact/detail/create-outline.png"));
     nicknameTitle->setTextColorLight(Qt::black);
     nicknameTitle->setTextColorDark(Qt::white);
     nicknameTitle->setPixelSize(13);
-    _nickname = new ElaText(nicknameWid);
+    _nickname = new ElaText(_nicknameWid);
     _nickname->setFont(nicknameTitle->font());
 
     nicknameLayout->addWidget(nicknameTitle);
     nicknameLayout->addStretch();
     nicknameLayout->addWidget(_nickname);
-    nicknameWid->setLayout(nicknameLayout);
+    _nicknameWid->setLayout(nicknameLayout);
 
-    QWidget* groupWid = new QWidget(fWid);
-    QHBoxLayout* groupLayout = new QHBoxLayout(groupWid);
+    _groupWid = new QWidget(fWid);
+    QHBoxLayout* groupLayout = new QHBoxLayout(_groupWid);
     groupLayout->setContentsMargins(0, 0, 0, 0);
 
-    IconText* groupTitle  = new IconText("好友分组", groupWid);
+    IconText* groupTitle  = new IconText("好友分组", _groupWid);
     groupTitle->setIcon(QIcon(":/resource/image/contact/detail/people-outline.png"));
     groupTitle->setTextColorLight(Qt::black);
     groupTitle->setTextColorDark(Qt::white);
     groupTitle->setPixelSize(13);
-    _friendGroup = new ElaComboBox(groupWid);
+    _friendGroup = new ElaComboBox(_groupWid);
     _friendGroup->setFont(groupTitle->font());
+
+    connect(_friendGroup, &ElaComboBox::currentTextChanged, this, &ContactDetailWid::slotChangedGroup);
 
     groupLayout->addWidget(groupTitle);
     groupLayout->addStretch();
     groupLayout->addWidget(_friendGroup);
-    groupWid->setLayout(groupLayout);
+    _groupWid->setLayout(groupLayout);
 
     QWidget* signWid = new QWidget(fWid);
     QHBoxLayout* signLayout = new QHBoxLayout(signWid);
@@ -454,10 +490,19 @@ void ContactDetailWid::initFriendInfo()
     signTitle->setPixelSize(13);
     _sign = new ElaText(signWid);
     _sign->setFont(signTitle->font());
+    _signLineEdit = new ElaLineEdit(signWid);
+    _signEditButton = new IconButton(signWid);
+    _signEditButton->setFixedSize(25, 25);
+
+    _signLineEdit->setFixedHeight(_signEditButton->height());
+
+    connect(_signEditButton, &IconButton::clicked, this, &ContactDetailWid::slotEditSignText);
 
     signLayout->addWidget(signTitle);
     signLayout->addStretch();
     signLayout->addWidget(_sign);
+    signLayout->addWidget(_signLineEdit);
+    signLayout->addWidget(_signEditButton);
     signWid->setLayout(signLayout);
 
     SplitLine* line1 = new SplitLine(_centralWid);
@@ -483,8 +528,8 @@ void ContactDetailWid::initFriendInfo()
     _spaceWid->setLayout(spaceLayout);
     _spaceWid->installEventFilter(this);
 
-    fLayout->addWidget(nicknameWid);
-    fLayout->addWidget(groupWid);
+    fLayout->addWidget(_nicknameWid);
+    fLayout->addWidget(_groupWid);
     fLayout->addWidget(signWid);
     fLayout->addWidget(line1);
     fLayout->addWidget(_spaceWid);
@@ -543,10 +588,34 @@ void ContactDetailWid::updateInfo()
     _birthText->setText(birthday);
 
     _nickname->setText(nickname);
+
+    _friendGroup->blockSignals(true);
     _friendGroup->clear();
     _friendGroup->addItems(_contactList->getGroupNames());
     _friendGroup->setCurrentText(group);
+    _friendGroup->blockSignals(false);
+
     _sign->setText(sign);
+
+    if (group == "我") {
+        _editOrSendButton->changeToBasicColor();
+        _editOrSendButton->setText("编辑资料");
+        _groupWid->setHidden(true);
+        _nicknameWid->setHidden(true);
+        _signEditButton->setHidden(false);
+    }
+    else {
+        _editOrSendButton->recoverDefault();
+        _editOrSendButton->setText("发消息");
+        _groupWid->setHidden(false);
+        _nicknameWid->setHidden(false);
+        _signEditButton->setHidden(true);
+    }
+
+    _signStatus = false;
+    _signLineEdit->setHidden(true);
+    _sign->setHidden(false);
+    _signEditButton->setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::PenToSquare));
 }
 
 AvatarWid::AvatarWid(QWidget *parent)

@@ -7,11 +7,13 @@ class IconButton : public QPushButton
 {
     Q_OBJECT
 public:
-    IconButton(QIcon icon, QWidget* parent = nullptr);
+    explicit IconButton(QWidget* parent = nullptr);
+    explicit IconButton(QIcon icon, QWidget* parent = nullptr);
     ~IconButton() = default;
 
     void setBorderRadius(int borderRadius);
     void setIconSize(int size);
+    void setIcon(const QIcon& icon);
     void setBorderWidth(int width);
     void setTransparentBackground(bool enable);
 
