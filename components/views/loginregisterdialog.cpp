@@ -4,7 +4,8 @@
 #include "ElaIcon.h"
 #include "ElaText.h"
 #include "ElaCheckBox.h"
-#include "ElaPushButton.h"
+
+#include "../controls/themecolorbutton.h"
 #include "../controls/icontext.h"
 
 #include <QVBoxLayout>
@@ -158,7 +159,7 @@ QWidget* LoginRegisterDialog::initLoginPage()
 
 
     //登录注册按钮
-    ElaPushButton* loginButton = new ElaPushButton("登录", loginWid);
+    ThemeColorButton* loginButton = new ThemeColorButton("登录", loginWid);
     ElaPushButton* registerButton = new ElaPushButton("还没有账户？立即注册", loginWid);
     QFont f = loginButton->font();
     f.setPixelSize(13);
@@ -167,11 +168,6 @@ QWidget* LoginRegisterDialog::initLoginPage()
     loginButton->setFixedSize(width,
                               _login_pwd_edit->getLineEdit()->height() + 6);
     loginButton->setBorderRadius(8);
-    loginButton->setLightDefaultColor(QColor("#1a6bf8"));
-    loginButton->setLightHoverColor(QColor("#4d8efb"));
-    loginButton->setLightPressColor(QColor("#0d5ce0"));
-    loginButton->setLightTextColor(Qt::white);
-    loginButton->setDarkTextColor(Qt::black);
 
     registerButton->setFont(f);
     registerButton->setFixedSize(loginButton->size());
@@ -255,7 +251,7 @@ QWidget* LoginRegisterDialog::initRegisterPage()
     //登录注册按钮
     QWidget* bottomWid = new QWidget(registerWid);
     QVBoxLayout* bottomLayout = new QVBoxLayout(bottomWid);
-    ElaPushButton* registerButton = new ElaPushButton("注册", registerWid);
+    ThemeColorButton* registerButton = new ThemeColorButton("注册", registerWid);
     ElaPushButton* loginButton = new ElaPushButton("已有账户？立即登录", registerWid);
     QFont f = loginButton->font();
     f.setPixelSize(13);
@@ -264,11 +260,6 @@ QWidget* LoginRegisterDialog::initRegisterPage()
     registerButton->setFixedSize(_register_pwd_edit->getLineEdit()->width(),
                                  _register_pwd_edit->getLineEdit()->height() + 6);
     registerButton->setBorderRadius(8);
-    registerButton->setLightDefaultColor(QColor("#1a6bf8"));
-    registerButton->setLightHoverColor(QColor("#4d8efb"));
-    registerButton->setLightPressColor(QColor("#0d5ce0"));
-    registerButton->setLightTextColor(Qt::white);
-    registerButton->setDarkTextColor(Qt::black);
 
     loginButton->setFont(f);
     loginButton->setFixedSize(registerButton->size());

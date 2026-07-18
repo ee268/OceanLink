@@ -15,6 +15,7 @@ void SplitLine::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     QRect rect = this->rect();
+    painter.setRenderHint(QPainter::Antialiasing);
 
     painter.setPen(Qt::NoPen);
     painter.fillRect(rect, ElaThemeColor(eTheme->getThemeMode(), BasicBorderDeep));

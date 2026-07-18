@@ -156,7 +156,7 @@ void ContactPage::initRightWidget()
 void ContactPage::initContactDetailWid()
 {
     QStackedWidget* stackedWid = this->getStackedWidget();
-    _detailWid = new ContactDetailWid(this);
+    _detailWid = new ContactDetailWid(_contactList, this);
 
     connect(_contactList, &ContactList::sigContactClicked, this, &ContactPage::slotToContactDetail);
 
@@ -184,8 +184,9 @@ void ContactPage::slotToContactDetail(const QModelIndex &index)
     this->getStackedWidget()->setCurrentIndex(2);
 }
 
-ContactDetailWid::ContactDetailWid(QWidget *parent)
+ContactDetailWid::ContactDetailWid(ContactList* list, QWidget *parent)
     : QWidget(parent)
+    , _contactList(list)
     , _avatar(nullptr)
 {
     initContent();
@@ -197,12 +198,89 @@ void ContactDetailWid::setIndex(const QModelIndex &index)
     updateInfo();
 }
 
+void ContactDetailWid::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+
+    if (!_blurredBg.isNull()) {
+        painter.drawPixmap(this->rect(), _blurredBg);
+    }
+
+    QWidget::paintEvent(event);
+}
+
+void ContactDetailWid::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    updateBlurredBg();
+}
+
+bool ContactDetailWid::eventFilter(QObject *obj, QEvent *event)
+{
+
+    if (obj == _spaceWid) {
+        if (event->type() == QEvent::Enter) {
+            _spaceWid->setCursor(Qt::PointingHandCursor);
+        }
+        else if (event->type() == QEvent::Leave) {
+            _spaceWid->setCursor(Qt::ArrowCursor);
+        }
+        else if (event->type() == QEvent::MouseButtonPress) {
+            // to do
+        }
+    }
+
+    return QWidget::eventFilter(obj, event);
+}
+
+void ContactDetailWid::updateBlurredBg()
+{
+    QPixmap pixmap(":/resource/image/rupa.jpg");
+    if (pixmap.isNull() || this->width() <= 0 || this->height() <= 0)
+        return;
+
+    qreal pixmapRatio = (qreal)pixmap.width() / pixmap.height();
+    qreal rectRatio = (qreal)this->width() / this->height();
+    QRect sourceRect;
+    if (pixmapRatio > rectRatio) {
+        int srcWidth = pixmap.height() * rectRatio;
+        int srcX = (pixmap.width() - srcWidth) / 2;
+        sourceRect = QRect(srcX, 0, srcWidth, pixmap.height());
+    } else {
+        int srcHeight = pixmap.width() / rectRatio;
+        int srcY = (pixmap.height() - srcHeight) / 2;
+        sourceRect = QRect(0, srcY, pixmap.width(), srcHeight);
+    }
+
+    QPixmap cropped = pixmap.copy(sourceRect);
+    QPixmap scaled = cropped.scaled(this->size() * devicePixelRatioF(),
+                                    Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    _blurredBg = ElaExponentialBlur::doExponentialBlur(scaled.toImage(), 30);
+    QPainter overlayPainter(&_blurredBg);
+    overlayPainter.fillRect(_blurredBg.rect(), QColor(0, 0, 0, 80));
+    overlayPainter.end();
+}
+
+void ContactDetailWid::slotUpdateCentralWidStyle()
+{
+    ElaThemeType::ThemeMode mode = eTheme->getThemeMode();
+    _centralWid->setStyleSheet(QString(
+        "#ContactDetailCentralWid { background-color: %1; border: 1px solid %2; border-radius: 8px; }")
+        .arg(ElaThemeColor(mode, BasicBase).name())
+        .arg(ElaThemeColor(mode, BasicBorderDeep).name()));
+}
+
 void ContactDetailWid::initContent()
 {
     QVBoxLayout* vLayout = new QVBoxLayout(this);
 
     _centralWid = new QWidget(this);
     _centralWid->setFixedWidth(600);
+    _centralWid->setObjectName("ContactDetailCentralWid");
+
+    slotUpdateCentralWidStyle();
+    connect(eTheme, &ElaTheme::themeModeChanged, this, &ContactDetailWid::slotUpdateCentralWidStyle);
 
     vLayout->setContentsMargins(0, 30, 0, 0);
     vLayout->addWidget(_centralWid, 0, Qt::AlignCenter);
@@ -210,7 +288,7 @@ void ContactDetailWid::initContent()
     this->setLayout(vLayout);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(_centralWid);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(8);
 
     SplitLine* line1 = new SplitLine(_centralWid);
@@ -357,7 +435,7 @@ void ContactDetailWid::initFriendInfo()
     groupTitle->setTextColorLight(Qt::black);
     groupTitle->setTextColorDark(Qt::white);
     groupTitle->setPixelSize(13);
-    _friendGroup = new ElaText(groupWid);
+    _friendGroup = new ElaComboBox(groupWid);
     _friendGroup->setFont(groupTitle->font());
 
     groupLayout->addWidget(groupTitle);
@@ -382,27 +460,34 @@ void ContactDetailWid::initFriendInfo()
     signLayout->addWidget(_sign);
     signWid->setLayout(signLayout);
 
-    QWidget* spaceWid = new QWidget(fWid);
-    QHBoxLayout* spaceLayout = new QHBoxLayout(spaceWid);
+    SplitLine* line1 = new SplitLine(_centralWid);
+    line1->setFixedHeight(1);
+
+    _spaceWid = new QWidget(fWid);
+    QHBoxLayout* spaceLayout = new QHBoxLayout(_spaceWid);
     spaceLayout->setContentsMargins(0, 0, 0, 0);
 
-    IconText* spaceTitle  = new IconText("空间", spaceWid);
+    IconText* spaceTitle  = new IconText("空间", _spaceWid);
     spaceTitle->setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::Blog));
     spaceTitle->setTextColorLight(Qt::black);
     spaceTitle->setTextColorDark(Qt::white);
     spaceTitle->setPixelSize(13);
-    _space = new ElaText(spaceWid);
-    _space->setFont(spaceTitle->font());
+    ElaIconButton* space = new ElaIconButton(ElaIconType::ArrowRightToBracket, _spaceWid);
+    space->setFixedWidth(18);
+    space->setLightHoverColor(Qt::transparent);
+    space->setDarkHoverColor(Qt::transparent);
 
     spaceLayout->addWidget(spaceTitle);
     spaceLayout->addStretch();
-    spaceLayout->addWidget(_space);
-    spaceWid->setLayout(spaceLayout);
+    spaceLayout->addWidget(space);
+    _spaceWid->setLayout(spaceLayout);
+    _spaceWid->installEventFilter(this);
 
     fLayout->addWidget(nicknameWid);
     fLayout->addWidget(groupWid);
     fLayout->addWidget(signWid);
-    fLayout->addWidget(spaceWid);
+    fLayout->addWidget(line1);
+    fLayout->addWidget(_spaceWid);
     fWid->setLayout(fLayout);
 
     _centralWid->layout()->addWidget(fWid);
@@ -418,6 +503,8 @@ void ContactDetailWid::updateInfo()
     int sex = _index.data(ContactListModel::Sex).toInt();
     int age = _index.data(ContactListModel::Age).toInt();
     QString birthday = _index.data(ContactListModel::Birthday).toString();
+    QString nickname = _index.data(ContactListModel::Nickname).toString();
+    QString group = _index.data(ContactListModel::Group).toString();
 
     _avatar->setAvatar(avatar);
     _avatar->setName(name);
@@ -454,6 +541,12 @@ void ContactDetailWid::updateInfo()
 
     _ageText->setText(QString("%1岁").arg(age));
     _birthText->setText(birthday);
+
+    _nickname->setText(nickname);
+    _friendGroup->clear();
+    _friendGroup->addItems(_contactList->getGroupNames());
+    _friendGroup->setCurrentText(group);
+    _sign->setText(sign);
 }
 
 AvatarWid::AvatarWid(QWidget *parent)

@@ -13,6 +13,8 @@ public:
     explicit ContactList(QWidget* parent);
     ~ContactList() = default;
 
+    QStringList getGroupNames() const;
+
 private:
     ContactListModel* _model;
     ContactListDelegate* _delegate;

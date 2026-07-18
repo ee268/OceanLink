@@ -40,6 +40,7 @@ ContactList::ContactList(QWidget *parent)
             data.nickname = nickname;
             data.age = 23;
             data.sex = 2;
+            data.nickname = "哈哈哈哈哈哈";
             data.birthday = "3月12日";
             if (status) {
                 data.avatar = QPixmap(":/resource/image/avatar.jpg");
@@ -49,6 +50,11 @@ ContactList::ContactList(QWidget *parent)
     }
 
     connect(this, &ContactList::clicked, this, &ContactList::slotContactClicked);
+}
+
+QStringList ContactList::getGroupNames() const
+{
+    return _model->getGroupNames();
 }
 
 void ContactList::slotContactClicked(const QModelIndex &index)

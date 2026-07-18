@@ -22,7 +22,12 @@ struct ContactData {
     ContactData* parent;
     std::vector<std::unique_ptr<ContactData>> children;
 
-    ContactData(): parent(nullptr){}
+    ContactData() : parent(nullptr){};
+
+    ContactData(const QString& group, ContactData* parent = nullptr)
+        : name(group)
+        , isGroupItem(true)
+        , parent(nullptr){}
 
     ContactData(const QString& name, const QString& sign, bool status,
                 const QString& group, const QString& nickname, 
@@ -61,7 +66,6 @@ public:
     explicit ContactListModel(QObject *parent = nullptr);
     ~ContactListModel() = default;
 
-    // 必须实现的虚函数
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &index) const override;
@@ -69,11 +73,11 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    // 自定义接口
     void addGroup(const QString& groupName);
     void addContact(const ContactData& contact);
     void removeContact(const QModelIndex& index);
     QModelIndex getGroupIndex(const QString& groupName) const;
+    QStringList getGroupNames() const;
 
 private:
     ContactData* getNode(const QModelIndex &index) const;

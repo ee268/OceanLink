@@ -5,10 +5,10 @@
 #include <QApplication>
 #include <QClipboard>
 
+#include "../controls/themecolorbutton.h"
 #include "../controls/iconbutton.h"
 
 #include "ElaImageCard.h"
-#include "ElaPushButton.h"
 #include "ElaMessageBar.h"
 
 ChatPage::ChatPage(QWidget *parent/* = nullptr*/)
@@ -194,16 +194,8 @@ void ChatPage::initRightWidget()
     //发送区
     QWidget* sendWid = new QWidget(msgEditWid);
     QHBoxLayout* sendWidLayout = new QHBoxLayout(sendWid);
-    ElaPushButton* sendButton = new ElaPushButton("发送", msgEditWid);
+    ThemeColorButton* sendButton = new ThemeColorButton("发送", msgEditWid);
     sendButton->setFixedSize(100, 40);
-    sendButton->setLightDefaultColor(QColor("#1a6bf8"));
-    sendButton->setLightHoverColor(QColor("#4d8efb"));
-    sendButton->setLightPressColor(QColor("#0d5ce0"));
-    sendButton->setDarkDefaultColor(QColor("#1a6bf8"));
-    sendButton->setDarkHoverColor(QColor("#4d8efb"));
-    sendButton->setDarkPressColor(QColor("#0d5ce0"));
-    sendButton->setLightTextColor(Qt::white);
-    sendButton->setDarkTextColor(Qt::white);
 
     //快捷键发送
     connect(sendAction, &QAction::triggered, this, &ChatPage::slotClickedSendButton);

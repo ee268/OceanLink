@@ -5,6 +5,8 @@
 
 #include "ElaSuggestBox.h"
 #include "ElaText.h"
+#include "ElaComboBox.h"
+#include "ElaIconButton.h"
 
 #include "../controls/displaycard.h"
 #include "../controls/icontext.h"
@@ -30,10 +32,17 @@ private:
 
 class ContactDetailWid : public QWidget
 {
+    Q_OBJECT
 public:
-    explicit ContactDetailWid(QWidget* parent = nullptr);
+    explicit ContactDetailWid(ContactList* list, QWidget* parent = nullptr);
 
     void setIndex(const QModelIndex& index);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
     void initContent();
@@ -43,11 +52,14 @@ private:
     void initPersonalInfo();
     void initFriendInfo();
 
+    void updateBlurredBg();
+
     void updateInfo();
 
 private:
     QWidget* _centralWid;
     QModelIndex _index;
+    ContactList* _contactList;
 
     DisplayCard * _card;
 
@@ -61,11 +73,14 @@ private:
     ElaText* _birthText;
 
     ElaText* _nickname;
-    ElaText* _friendGroup;
+    ElaComboBox* _friendGroup;
     ElaText* _sign;
-    ElaText* _space;
+    QWidget* _spaceWid;
 
     QPixmap _blurredBg;
+
+private slots:
+    void slotUpdateCentralWidStyle();
 };
 
 class ContactPage : public BasePage

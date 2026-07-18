@@ -91,8 +91,7 @@ void ContactListModel::addGroup(const QString& groupName)
 
     beginInsertRows(QModelIndex(), row, row);
 
-    auto group = std::make_unique<ContactData>(
-        groupName, "", false, groupName, "", true, 0, "", "", 0, QPixmap(), _root.get());
+    auto group = std::make_unique<ContactData>(groupName, _root.get());
     _root->children.push_back(std::move(group));
 
     endInsertRows();
@@ -155,6 +154,18 @@ QModelIndex ContactListModel::getGroupIndex(const QString& groupName) const
         }
     }
     return QModelIndex();
+}
+
+QStringList ContactListModel::getGroupNames() const
+{
+    QStringList res;
+    for (size_t i = 0; i < _root->children.size(); i++) {
+        if (_root->children.at(i)->isGroupItem) {
+            res.append(_root->children.at(i)->name);
+        }
+    }
+
+    return res;
 }
 
 ContactData* ContactListModel::getNode(const QModelIndex &index) const
