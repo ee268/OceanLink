@@ -35,6 +35,8 @@ void ChatPage::initLeftWidget()
     _sessionList = new SessionList(leftWid);
     _suggestBox = new ElaSuggestBox(leftWid);
     _suggestBox->setPlaceholderText("搜索");
+    _suggestBox->setMinimumWidth(280);
+    _suggestBox->setMaximumWidth(QWIDGETSIZE_MAX);
     IconButton* addFriendButton = new IconButton(QIcon(":/resource/image/chat/add-outline.png"), leftWid);
     addFriendButton->setFixedSize(40, _suggestBox->height());
     addFriendButton->setBorderRadius(6);

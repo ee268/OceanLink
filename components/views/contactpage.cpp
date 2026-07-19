@@ -36,6 +36,8 @@ void ContactPage::initLeftWidget()
 
     _suggestBox = new ElaSuggestBox(leftWid);
     _suggestBox->setPlaceholderText("搜索");
+    _suggestBox->setMinimumWidth(280);
+    _suggestBox->setMaximumWidth(QWIDGETSIZE_MAX);
     IconButton* addFriendButton = new IconButton(QIcon(":/resource/image/chat/add-outline.png"), leftWid);
     addFriendButton->setFixedSize(40, _suggestBox->height());
     addFriendButton->setBorderRadius(6);
@@ -52,8 +54,6 @@ void ContactPage::initLeftWidget()
     subWid2->setLayout(subHLayout);
 
     ElaPushButton* checkNotifyButton = new ElaPushButton("好友通知", subWid);
-    checkNotifyButton->setFixedSize(_suggestBox->size());
-    checkNotifyButton->setFixedWidth(checkNotifyButton->width() + 40 + 6);
     checkNotifyButton->setFixedHeight(checkNotifyButton->height() + 2);
     checkNotifyButton->setBorderRadius(6);
 
