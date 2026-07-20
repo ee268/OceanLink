@@ -30,6 +30,10 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *) override;
+    void mousePressEvent(QMouseEvent* event) override;
+
+signals:
+    void sigClicked();
 
 private:
     void initText();

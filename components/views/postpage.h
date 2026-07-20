@@ -6,6 +6,8 @@
 #include <QPushButton>
 
 #include "../controls/spacelist.h"
+#include "../controls/postlist.h"
+#include "../controls/postitemdetail.h"
 
 class EveryoneButton: public QPushButton
 {
@@ -35,9 +37,15 @@ public:
 
 private:
     void initLeftWidget();
+    void initRightWidget();
 
 private:
     SpaceList* _spaceList;
+    PostList* _postList;
+    PostItemDetail* _postDetail;
+
+private slots:
+    void slotPostItemClicked(const PostData& data);
 };
 
 #endif // POSTPAGE_H

@@ -10,13 +10,13 @@
 #include "ElaText.h"
 #include "ElaIcon.h"
 #include "ElaIconButton.h"
+#include "ElaExponentialBlur.h"
 
 #include "../controls/contactlistmodel.h"
 #include "../controls/splitline.h"
 
 #include "../../global/global.h"
 
-#include "ElaExponentialBlur.h"
 
 ContactPage::ContactPage(QWidget *parent/* = nullptr*/)
     : BasePage(parent)
@@ -95,7 +95,7 @@ void ContactPage::initRightWidget()
 
     connect(clearButton, &IconButton::clicked, this, &ContactPage::slotClearButtonClicked);
 
-    subWidLayout->setContentsMargins(0, 0, 0, 0);
+    subWidLayout->setContentsMargins(20, 20, 20, 0);
     subWidLayout->addWidget(title);
     subWidLayout->addStretch();
     subWidLayout->addWidget(clearButton, 1, Qt::AlignVCenter);
@@ -135,7 +135,7 @@ void ContactPage::initRightWidget()
         _notifyList->addNotifyItem(data);
     }
 
-    mainLayout->setContentsMargins(20, 20, 20, 20);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(subWid);
     mainLayout->addWidget(_notifyList);
     rightWid->setLayout(mainLayout);
@@ -356,7 +356,7 @@ void ContactDetailWid::initCard()
 void ContactDetailWid::initAccountInfo()
 {
     //头像、昵称、账号、状态
-    _avatar = new AvatarWid(_centralWid);
+    _avatar = new AvatarWidget(_centralWid);
     _avatar->setFixedSize(62, 62);
 
     QWidget* subWid = new QWidget(_centralWid);
@@ -616,48 +616,4 @@ void ContactDetailWid::updateInfo()
     _signLineEdit->setHidden(true);
     _sign->setHidden(false);
     _signEditButton->setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::PenToSquare));
-}
-
-AvatarWid::AvatarWid(QWidget *parent)
-    : QWidget(parent)
-{
-
-}
-
-void AvatarWid::setAvatar(const QPixmap &pixmap)
-{
-    _avatar = pixmap;
-    update();
-}
-
-void AvatarWid::setName(const QString &name)
-{
-    _name = name;
-    update();
-}
-
-void AvatarWid::paintEvent(QPaintEvent *event)
-{
-    QPainter painter(this);
-    painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
-
-    if (_avatar.isNull()) {
-        painter.setPen(ElaThemeColor(eTheme->getThemeMode(), BasicBorderDeep));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawEllipse(this->rect().adjusted(1, 1, -1, -1));
-
-        QFont f;
-        f.setBold(true);
-        f.setPixelSize(18);
-        painter.setFont(f);
-        painter.drawText(this->rect(), Qt::AlignCenter, _name.at(0));
-    }
-    else {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::NoBrush);
-        QPainterPath path;
-        path.addEllipse(this->rect());
-        painter.setClipPath(path);
-        painter.drawPixmap(this->rect(), _avatar);
-    }
 }

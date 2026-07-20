@@ -22,7 +22,7 @@ void SpaceListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
     painter->setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
 
     QFont font = painter->font();
-    font.setPixelSize(14);
+    font.setPixelSize(16);
     font.setBold(true);
     painter->setFont(font);
 

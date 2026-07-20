@@ -6,31 +6,21 @@
 
 #include "ElaTheme.h"
 #include "ElaIcon.h"
-#include "ElaText.h"
+#include "ElaScrollArea.h"
 
 PostPage::PostPage(QWidget *parent/* = nullptr*/)
     : BasePage(parent)
+    , _postDetail(nullptr)
 {
     initDefaultLayout();
     initLeftWidget();
+    initRightWidget();
 }
 
 void PostPage::initLeftWidget()
 {
     QWidget* leftWid = this->getLeftWidget();
     QVBoxLayout* mainLayout = new QVBoxLayout(leftWid);
-
-    // QWidget* wid = new QWidget(leftWid);
-    // QVBoxLayout* widLayout = new QVBoxLayout(wid);
-
-    // ElaText* title = new ElaText("好友空间", wid);
-    // title->setTextStyle(ElaTextType::Subtitle);
-    // title->setIsWrapAnywhere(false);
-
-    // widLayout->setContentsMargins(15, 15, 15, 15);
-    // widLayout->setSpacing(0);
-    // widLayout->addWidget(title, 0, Qt::AlignLeft);
-    // wid->setLayout(widLayout);
 
     _spaceList = new SpaceList(this);
 
@@ -46,10 +36,74 @@ void PostPage::initLeftWidget()
 
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
-    // mainLayout->addWidget(wid);
     mainLayout->addWidget(btnWid);
     mainLayout->addWidget(_spaceList);
     leftWid->setLayout(mainLayout);
+}
+
+void PostPage::initRightWidget()
+{
+    QStackedWidget* stackedWid = this->getStackedWidget();
+    QWidget* wid = new QWidget(stackedWid);
+    QVBoxLayout* widLayout = new QVBoxLayout(wid);
+
+    _postList = new PostList(wid);
+
+    widLayout->setContentsMargins(0, 0, 0, 0);
+    widLayout->setSpacing(0);
+    widLayout->addWidget(_postList);
+
+    ElaScrollArea* postScrollArea = new ElaScrollArea(stackedWid);
+    QWidget* postWid = new QWidget(this);
+    QVBoxLayout* postlayout = new QVBoxLayout(postWid);
+    postlayout->setContentsMargins(20, 20, 20, 20);
+    postlayout->setSpacing(0);
+
+    _postDetail = new PostItemDetail(PostData(), postScrollArea);
+    postlayout->addWidget(_postDetail);
+    postWid->setLayout(postlayout);
+
+    postScrollArea->setWidget(postWid);
+    postScrollArea->setWidgetResizable(true);
+
+    stackedWid->addWidget(wid);
+    stackedWid->addWidget(postScrollArea);
+    stackedWid->setCurrentIndex(1);
+
+    connect(_postList, &PostList::sigPostItemClicked, this, &PostPage::slotPostItemClicked);
+}
+
+void PostPage::slotPostItemClicked(const PostData &data)
+{
+    _postDetail->updateData(data);
+
+    QList<ReplyCommentData> comments;
+    QStringList names = {"张三", "李四", "王五", "赵六", "钱七",
+                         "孙八", "周九", "吴十", "郑十一", "王十二"};
+    QStringList contents = {
+        "说得好！",
+        "支持一下！",
+        "写得真不错，继续加油。",
+        "有道理，学到了。",
+        "哈哈哈，太有趣了。",
+        "感谢分享！",
+        "这个观点很新颖。",
+        "我也这么认为。",
+        "很棒的文章！",
+        "期待更多更新。"
+    };
+
+    for (int i = 0; i < 10; i++) {
+        ReplyCommentData comment(names[i], "", "2026-07-20", contents[i]);
+        if (i % 3 == 0) {
+            ReplyCommentData reply("回复者", "", "2026-07-20", "回复：" + contents[i]);
+            comment.replys.push_back(reply);
+        }
+        comments.append(comment);
+    }
+
+    _postDetail->setCommentList(comments);
+    this->getStackedWidget()->setCurrentIndex(2);
 }
 
 EveryoneButton::EveryoneButton(const QString &text, const QIcon &icon, QWidget *parent)

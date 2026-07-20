@@ -15,22 +15,7 @@
 #include "../controls/confirmdialog.h"
 #include "../controls/themecolorbutton.h"
 #include "../controls/iconbutton.h"
-
-class AvatarWid : public QWidget
-{
-public:
-    explicit AvatarWid(QWidget* parent = nullptr);
-
-    void setAvatar(const QPixmap& pixmap);
-    void setName(const QString& name);
-
-protected:
-    void paintEvent(QPaintEvent* event) override;
-
-private:
-    QPixmap _avatar;
-    QString _name;
-};
+#include "../controls/avatarwidget.h"
 
 class ContactDetailWid : public QWidget
 {
@@ -65,7 +50,7 @@ private:
 
     DisplayCard * _card;
 
-    AvatarWid* _avatar;
+    AvatarWidget* _avatar;
     IconText* _account;
     IconText* _status;
     ElaText* _name;

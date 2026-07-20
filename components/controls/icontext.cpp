@@ -1,6 +1,7 @@
 #include "icontext.h"
 
 #include <QPainter>
+#include <QMouseEvent>
 
 IconText::IconText(QWidget *parent/* = nullptr*/)
     : QLabel(parent)
@@ -143,4 +144,12 @@ void IconText::initText()
 void IconText::slotChangedTheme(ElaThemeType::ThemeMode mode)
 {
     update();
+}
+
+void IconText::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        emit sigClicked();
+    }
+    QLabel::mousePressEvent(event);
 }
