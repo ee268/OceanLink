@@ -12,15 +12,21 @@ public:
     ~BasePage();
 
     QWidget* getLeftWidget() const;
+    QWidget* getRightWidget() const;
     QStackedWidget* getStackedWidget() const;
 
     void switchToPlaceHolderPage();
 
+    void setCurrentIndex(int index);
+
 protected:
     void initDefaultLayout();
 
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     QWidget* _leftWid;
+    QWidget* _rightWid;
     QStackedWidget* _stackedWidget;
 };
 

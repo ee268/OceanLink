@@ -8,19 +8,35 @@
 
 #include "ElaLineEdit.h"
 
+class IconText;
+
 struct ReplyCommentData {
     QString name;
-    QString avatar;
+    QPixmap avatar;
     QString date;
     QString content;
-    std::vector<ReplyCommentData> replys;
+    ReplyCommentData* parent;
+    std::vector<std::unique_ptr<ReplyCommentData>> replys;
 
-    ReplyCommentData() = default;
+    ReplyCommentData() : parent(nullptr) {}
 
-    ReplyCommentData(const QString& name, const QString& avatar,
+    ReplyCommentData(const QString& name, const QPixmap& avatar,
                      const QString& date, const QString& content)
-        : name(name), avatar(avatar), date(date), content(content)
+        : name(name), avatar(avatar), date(date), content(content), parent(nullptr)
     {}
+};
+
+class CommentWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit CommentWidget(const ReplyCommentData& comment, int indent = 0, QWidget* parent = nullptr);
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
+
+private:
+    IconText* _replyText;
 };
 
 class PostItemDetail : public PostItem
@@ -30,20 +46,27 @@ public:
     explicit PostItemDetail(const PostData& data, QWidget *parent = nullptr);
 
     void updateData(const PostData& data);
-    void setCommentList(const QList<ReplyCommentData>& comments);
+    void setCommentList(std::vector<std::unique_ptr<ReplyCommentData>> comments);
+    void addComment(std::unique_ptr<ReplyCommentData> comment);
 
 private:
     void initCommentArea();
     void updateCommentList();
 
-    QWidget* createCommentWidget(const ReplyCommentData& comment, int indent = 0);
+    CommentWidget* createCommentWidget(const ReplyCommentData& comment, int indent = 0);
 
 private:
-    QList<ReplyCommentData> _comments;
+    std::vector<std::unique_ptr<ReplyCommentData>> _comments;
     ElaLineEdit* _commentEdit;
     QWidget* _commentListWid;
     QVBoxLayout* _commentListLayout;
-    QList<QWidget*> _commentWidgets;
+    QList<CommentWidget*> _commentWidgets;
+
+signals:
+    void sigSendCommentSuccess();
+
+private slots:
+    void slotSendBtnClicked();
 };
 
 #endif // POSTITEMDETAIL_H

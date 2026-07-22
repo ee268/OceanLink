@@ -7,6 +7,8 @@
 #include "ElaTheme.h"
 #include "ElaIcon.h"
 #include "ElaScrollArea.h"
+#include "ElaScrollBar.h"
+#include "ElaMessageBar.h"
 
 PostPage::PostPage(QWidget *parent/* = nullptr*/)
     : BasePage(parent)
@@ -47,6 +49,37 @@ void PostPage::initRightWidget()
     QWidget* wid = new QWidget(stackedWid);
     QVBoxLayout* widLayout = new QVBoxLayout(wid);
 
+    QWidget* rightWid = this->getRightWidget();
+    auto rightLayout = dynamic_cast<QVBoxLayout*>(rightWid->layout());
+    QWidget* btnWid = new QWidget(rightWid);
+    QHBoxLayout* btnLayout = new QHBoxLayout(btnWid);
+    btnLayout->setContentsMargins(20, 10, 20, 10);
+
+    ElaPushButton* refreshBtn = new ElaPushButton(rightWid);
+    refreshBtn->setBorderRadius(8);
+    refreshBtn->setFixedWidth(80);
+    refreshBtn->setText("刷新");
+
+    ElaPushButton* publishPostBtn = new ElaPushButton(rightWid);
+    publishPostBtn->setBorderRadius(8);
+    publishPostBtn->setFixedWidth(100);
+    publishPostBtn->setText("写一篇");
+
+    _backBtn = new ElaPushButton(rightWid);
+    _backBtn->setBorderRadius(8);
+    _backBtn->setFixedWidth(80);
+    _backBtn->setText("返回");
+    _backBtn->setHidden(true);
+
+    connect(_backBtn, &ElaPushButton::clicked, this, &PostPage::slotBackBtnClicked);
+
+    btnLayout->addWidget(refreshBtn);
+    btnLayout->addWidget(_backBtn);
+    btnLayout->addStretch();
+    btnLayout->addWidget(publishPostBtn);
+
+    rightLayout->insertWidget(0, btnWid);
+
     _postList = new PostList(wid);
 
     widLayout->setContentsMargins(0, 0, 0, 0);
@@ -56,7 +89,7 @@ void PostPage::initRightWidget()
     ElaScrollArea* postScrollArea = new ElaScrollArea(stackedWid);
     QWidget* postWid = new QWidget(this);
     QVBoxLayout* postlayout = new QVBoxLayout(postWid);
-    postlayout->setContentsMargins(20, 20, 20, 20);
+    postlayout->setContentsMargins(20, 0, 20, 20);
     postlayout->setSpacing(0);
 
     _postDetail = new PostItemDetail(PostData(), postScrollArea);
@@ -66,9 +99,17 @@ void PostPage::initRightWidget()
     postScrollArea->setWidget(postWid);
     postScrollArea->setWidgetResizable(true);
 
+    ElaScrollBar* scrollBar = new ElaScrollBar(postScrollArea->verticalScrollBar(), postScrollArea);
+    scrollBar->setIsAnimation(true);
+
+    connect(_postDetail, &PostItemDetail::sigSendCommentSuccess, this, [postScrollArea](){
+        postScrollArea->verticalScrollBar()->setValue(480);
+        ElaMessageBar::success(ElaMessageBarType::Top, "成功", "已发送", 2000);
+    });
+
     stackedWid->addWidget(wid);
     stackedWid->addWidget(postScrollArea);
-    stackedWid->setCurrentIndex(1);
+    stackedWid->setCurrentIndex(PostListPage);
 
     connect(_postList, &PostList::sigPostItemClicked, this, &PostPage::slotPostItemClicked);
 }
@@ -77,7 +118,7 @@ void PostPage::slotPostItemClicked(const PostData &data)
 {
     _postDetail->updateData(data);
 
-    QList<ReplyCommentData> comments;
+    std::vector<std::unique_ptr<ReplyCommentData>> comments;
     QStringList names = {"张三", "李四", "王五", "赵六", "钱七",
                          "孙八", "周九", "吴十", "郑十一", "王十二"};
     QStringList contents = {
@@ -94,16 +135,24 @@ void PostPage::slotPostItemClicked(const PostData &data)
     };
 
     for (int i = 0; i < 10; i++) {
-        ReplyCommentData comment(names[i], "", "2026-07-20", contents[i]);
-        if (i % 3 == 0) {
-            ReplyCommentData reply("回复者", "", "2026-07-20", "回复：" + contents[i]);
-            comment.replys.push_back(reply);
+        auto comment = std::make_unique<ReplyCommentData>(names[i], QPixmap(), "2026-07-20", contents[i]);
+        for (int j = 0; j < i; j++) {
+            auto reply = std::make_unique<ReplyCommentData>("回复者", QPixmap(":/resource/image/avatar.jpg"), "2026-07-20", "回复：" + contents[i]);
+            reply->parent = comment.get();
+            comment->replys.push_back(std::move(reply));
         }
-        comments.append(comment);
+        comments.push_back(std::move(comment));
     }
 
-    _postDetail->setCommentList(comments);
-    this->getStackedWidget()->setCurrentIndex(2);
+    _postDetail->setCommentList(std::move(comments));
+    _backBtn->setHidden(false);
+    this->setCurrentIndex(PostDetailPage);
+}
+
+void PostPage::slotBackBtnClicked()
+{
+    this->setCurrentIndex(PostListPage);
+    _backBtn->setHidden(true);
 }
 
 EveryoneButton::EveryoneButton(const QString &text, const QIcon &icon, QWidget *parent)

@@ -9,6 +9,8 @@
 #include "../controls/postlist.h"
 #include "../controls/postitemdetail.h"
 
+#include "ElaPushButton.h"
+
 class EveryoneButton: public QPushButton
 {
 public:
@@ -35,17 +37,25 @@ public:
     explicit PostPage(QWidget* parent = nullptr);
     ~PostPage() = default;
 
+    enum {
+        PostListPage = 1,
+        PostDetailPage
+    };
+
 private:
     void initLeftWidget();
     void initRightWidget();
 
 private:
+    ElaPushButton* _backBtn;
     SpaceList* _spaceList;
     PostList* _postList;
     PostItemDetail* _postDetail;
 
 private slots:
     void slotPostItemClicked(const PostData& data);
+
+    void slotBackBtnClicked();
 };
 
 #endif // POSTPAGE_H
