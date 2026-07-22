@@ -1,7 +1,8 @@
 #include "postitemdetail.h"
 
 #include <QScrollArea>
-#include <QTimer>
+#include <QMouseEvent>
+#include <QDebug>
 #include <QEvent>
 
 #include "avatarwidget.h"
@@ -10,9 +11,10 @@
 
 #include "ElaText.h"
 
-CommentWidget::CommentWidget(const ReplyCommentData &comment, int indent, QWidget *parent)
+CommentWidget::CommentWidget(std::shared_ptr<ReplyCommentData> data, int indent, QWidget *parent)
     : QWidget(parent)
     , _replyText(nullptr)
+    , _data(data)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(indent * 30, 10, 0, 0);
@@ -27,17 +29,17 @@ CommentWidget::CommentWidget(const ReplyCommentData &comment, int indent, QWidge
     AvatarWidget* avatar = new AvatarWidget(topWid);
     avatar->setFixedSize(40, 40);
     avatar->setPixeSize(15);
-    if (!comment.avatar.isNull()) {
-        avatar->setAvatar(comment.avatar);
+    if (!data->avatar.isNull()) {
+        avatar->setAvatar(data->avatar);
     }
-    avatar->setName(comment.name);
+    avatar->setName(data->name);
 
     QWidget* nameDateWid = new QWidget(topWid);
     QVBoxLayout* nameDateLayout = new QVBoxLayout(nameDateWid);
     nameDateLayout->setContentsMargins(0, 0, 0, 0);
     nameDateLayout->setSpacing(0);
 
-    ElaText* nameText = new ElaText(comment.name, nameDateWid);
+    ElaText* nameText = new ElaText(data->name, nameDateWid);
     QFont nameFont = nameText->font();
     nameFont.setPixelSize(12);
     nameFont.setBold(true);
@@ -50,7 +52,7 @@ CommentWidget::CommentWidget(const ReplyCommentData &comment, int indent, QWidge
     dateReplyLayout->setSpacing(8);
 
 
-    IconText* dateText = new IconText(comment.date, nameDateWid);
+    IconText* dateText = new IconText(data->date, nameDateWid);
     dateText->setPixelSize(10);
 
     IconText* replyText = new IconText("回复", topWid);
@@ -74,7 +76,7 @@ CommentWidget::CommentWidget(const ReplyCommentData &comment, int indent, QWidge
     layout->addWidget(topWid);
 
     //评论内容
-    ElaText* contentText = new ElaText(comment.content, this);
+    ElaText* contentText = new ElaText(data->content, this);
     QFont contentFont = contentText->font();
     contentFont.setPixelSize(13);
     contentText->setFont(contentFont);
@@ -100,9 +102,16 @@ bool CommentWidget::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::Enter) {
             _replyText->setVisible(true);
             _replyText->setCursor(Qt::PointingHandCursor);
-        } else if (event->type() == QEvent::Leave) {
+        }
+        else if (event->type() == QEvent::Leave) {
             _replyText->setVisible(false);
             _replyText->setCursor(Qt::ArrowCursor);
+        }
+        else if (event->type() == QEvent::MouseButtonPress) {
+            QMouseEvent* mEvent = dynamic_cast<QMouseEvent*>(event);
+            if (mEvent->button() == Qt::LeftButton) {
+                emit sigReplyButtonClicked(_data);
+            }
         }
     }
     return QWidget::eventFilter(obj, event);
@@ -113,23 +122,21 @@ PostItemDetail::PostItemDetail(const PostData &data, QWidget *parent)
     , _commentEdit(nullptr)
     , _commentListWid(nullptr)
     , _commentListLayout(nullptr)
+    , _replyDrawer(nullptr)
 {
     initCommentArea();
 }
 
-void PostItemDetail::setCommentList(std::vector<std::unique_ptr<ReplyCommentData>> comments)
+void PostItemDetail::setCommentList(std::vector<std::shared_ptr<ReplyCommentData>> comments)
 {
-    _comments.clear();
-    for (auto& comment : comments) {
-        _comments.push_back(std::move(comment));
-    }
+    _comments = std::move(comments);
     updateCommentList();
 }
 
-void PostItemDetail::addComment(std::unique_ptr<ReplyCommentData> comment)
+void PostItemDetail::addComment(std::shared_ptr<ReplyCommentData> comment)
 {
-    _comments.push_back(std::move(comment));
-    CommentWidget* commentWidget = createCommentWidget(*_comments.back(), 0);
+    _comments.push_back(comment);
+    CommentWidget* commentWidget = createCommentWidget(comment, 0);
     _commentWidgets.append(commentWidget);
     _commentListLayout->insertWidget(0, commentWidget);
 }
@@ -195,6 +202,9 @@ void PostItemDetail::initCommentArea()
     commentArea->setLayout(commentLayout);
 
     mainLayout->addWidget(commentArea);
+
+    _replyDrawer = new ElaDrawerArea(this);
+    _replyDrawer->collapse();
 }
 
 void PostItemDetail::updateCommentList()
@@ -208,20 +218,22 @@ void PostItemDetail::updateCommentList()
     }
 
     for (const auto& comment : _comments) {
-        CommentWidget* commentWidget = createCommentWidget(*comment, 0);
+        CommentWidget* commentWidget = createCommentWidget(comment, 0);
         _commentWidgets.append(commentWidget);
         _commentListLayout->addWidget(commentWidget);
     }
     _commentListLayout->addStretch();
 }
 
-CommentWidget* PostItemDetail::createCommentWidget(const ReplyCommentData &comment, int indent)
+CommentWidget* PostItemDetail::createCommentWidget(std::shared_ptr<ReplyCommentData> comment, int indent)
 {
     CommentWidget* widget = new CommentWidget(comment, indent, this);
 
+    connect(widget, &CommentWidget::sigReplyButtonClicked, this, &PostItemDetail::slotReplyButtonClicked);
+
     //评论回复列表
-    for (const auto& reply : comment.replys) {
-        CommentWidget* replyWidget = createCommentWidget(*reply, 1);
+    for (const auto& reply : comment->replys) {
+        CommentWidget* replyWidget = createCommentWidget(reply, 1);
         _commentWidgets.append(replyWidget);
         widget->layout()->addWidget(replyWidget);
     }
@@ -236,7 +248,7 @@ void PostItemDetail::slotSendBtnClicked()
         return;
     }
 
-    auto data = std::make_unique<ReplyCommentData>(
+    auto data = std::make_shared<ReplyCommentData>(
         "ee268",
         QPixmap(":/resource/image/avatar.jpg"),
         "刚刚",
@@ -244,7 +256,13 @@ void PostItemDetail::slotSendBtnClicked()
     );
 
     _commentEdit->clear();
-    addComment(std::move(data));
+    addComment(data);
 
     emit sigSendCommentSuccess();
+}
+
+void PostItemDetail::slotReplyButtonClicked(std::shared_ptr<ReplyCommentData> data)
+{
+    qDebug() << "expand";
+    _replyDrawer->expand();
 }

@@ -118,7 +118,7 @@ void PostPage::slotPostItemClicked(const PostData &data)
 {
     _postDetail->updateData(data);
 
-    std::vector<std::unique_ptr<ReplyCommentData>> comments;
+    std::vector<std::shared_ptr<ReplyCommentData>> comments;
     QStringList names = {"张三", "李四", "王五", "赵六", "钱七",
                          "孙八", "周九", "吴十", "郑十一", "王十二"};
     QStringList contents = {
@@ -135,16 +135,16 @@ void PostPage::slotPostItemClicked(const PostData &data)
     };
 
     for (int i = 0; i < 10; i++) {
-        auto comment = std::make_unique<ReplyCommentData>(names[i], QPixmap(), "2026-07-20", contents[i]);
-        for (int j = 0; j < i; j++) {
-            auto reply = std::make_unique<ReplyCommentData>("回复者", QPixmap(":/resource/image/avatar.jpg"), "2026-07-20", "回复：" + contents[i]);
-            reply->parent = comment.get();
-            comment->replys.push_back(std::move(reply));
+        auto comment = std::make_shared<ReplyCommentData>(names[i], QPixmap(), "2026-07-20", contents[i]);
+        for (int j = i + 1; j < 10; j++) {
+            auto reply = std::make_shared<ReplyCommentData>(names[j], QPixmap(":/resource/image/avatar.jpg"), "2026-07-20", contents[j]);
+            reply->parent = comment;
+            comment->replys.push_back(reply);
         }
-        comments.push_back(std::move(comment));
+        comments.push_back(comment);
     }
 
-    _postDetail->setCommentList(std::move(comments));
+    _postDetail->setCommentList(comments);
     _backBtn->setHidden(false);
     this->setCurrentIndex(PostDetailPage);
 }

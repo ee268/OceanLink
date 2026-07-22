@@ -158,10 +158,10 @@ void PostItem::initContent()
     collectText->setTextColorLight(Qt::black);
     collectText->setTextColorDark(Qt::white);
 
+    bottomLayout->addStretch();
     bottomLayout->addWidget(likeText);
     bottomLayout->addWidget(commentText);
     bottomLayout->addWidget(collectText);
-    bottomLayout->addStretch();
     bottomWid->setLayout(bottomLayout);
 
     mainLayout->addWidget(bottomWid);
