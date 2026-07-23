@@ -2,7 +2,6 @@
 
 #include <QScrollArea>
 #include <QMouseEvent>
-#include <QDebug>
 #include <QEvent>
 
 #include "avatarwidget.h"
@@ -10,6 +9,7 @@
 #include "themecolorbutton.h"
 
 #include "ElaText.h"
+#include "ElaMessageBar.h"
 
 CommentWidget::CommentWidget(std::shared_ptr<ReplyCommentData> data, int indent, QWidget *parent)
     : QWidget(parent)
@@ -59,6 +59,8 @@ CommentWidget::CommentWidget(std::shared_ptr<ReplyCommentData> data, int indent,
     _replyText = replyText;
     replyText->setPixelSize(10);
     replyText->setVisible(false);
+    replyText->setCursor(Qt::PointingHandCursor);
+    replyText->installEventFilter(this);
 
     dateReplyLayout->addWidget(dateText);
     dateReplyLayout->addWidget(replyText);
@@ -76,12 +78,22 @@ CommentWidget::CommentWidget(std::shared_ptr<ReplyCommentData> data, int indent,
     layout->addWidget(topWid);
 
     //评论内容
-    ElaText* contentText = new ElaText(data->content, this);
+    ElaText* contentText = new ElaText(this);
     QFont contentFont = contentText->font();
     contentFont.setPixelSize(13);
     contentText->setFont(contentFont);
     contentText->setWordWrap(true);
     contentText->setIsWrapAnywhere(true);
+
+    if (data->parent) {
+        contentText->setText("回复 " + data->parent->name + ": " + data->content);
+        if (!data->parent->parent) {
+            contentText->setText("回复: " + data->content);
+        }
+    }
+    else {
+        contentText->setText(data->content);
+    }
 
     QHBoxLayout* contentLayout = new QHBoxLayout();
     contentLayout->setContentsMargins(0, 0, 0, 0);
@@ -96,21 +108,28 @@ CommentWidget::CommentWidget(std::shared_ptr<ReplyCommentData> data, int indent,
     this->installEventFilter(this);
 }
 
+std::shared_ptr<ReplyCommentData> CommentWidget::getData() const
+{
+    return _data;
+}
+
 bool CommentWidget::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == this) {
         if (event->type() == QEvent::Enter) {
             _replyText->setVisible(true);
-            _replyText->setCursor(Qt::PointingHandCursor);
         }
         else if (event->type() == QEvent::Leave) {
             _replyText->setVisible(false);
-            _replyText->setCursor(Qt::ArrowCursor);
         }
-        else if (event->type() == QEvent::MouseButtonPress) {
+    }
+    else if (obj == _replyText) {
+        if (event->type() == QEvent::MouseButtonPress) {
             QMouseEvent* mEvent = dynamic_cast<QMouseEvent*>(event);
             if (mEvent->button() == Qt::LeftButton) {
                 emit sigReplyButtonClicked(_data);
+                _replyText->setCursor(Qt::PointingHandCursor);
+                return true;
             }
         }
     }
@@ -119,10 +138,10 @@ bool CommentWidget::eventFilter(QObject *obj, QEvent *event)
 
 PostItemDetail::PostItemDetail(const PostData &data, QWidget *parent)
     : PostItem(data, parent)
+    , _centralWid(parent)
     , _commentEdit(nullptr)
     , _commentListWid(nullptr)
     , _commentListLayout(nullptr)
-    , _replyDrawer(nullptr)
 {
     initCommentArea();
 }
@@ -137,7 +156,7 @@ void PostItemDetail::addComment(std::shared_ptr<ReplyCommentData> comment)
 {
     _comments.push_back(comment);
     CommentWidget* commentWidget = createCommentWidget(comment, 0);
-    _commentWidgets.append(commentWidget);
+    _commentWidgets.insert(0, commentWidget);
     _commentListLayout->insertWidget(0, commentWidget);
 }
 
@@ -202,9 +221,6 @@ void PostItemDetail::initCommentArea()
     commentArea->setLayout(commentLayout);
 
     mainLayout->addWidget(commentArea);
-
-    _replyDrawer = new ElaDrawerArea(this);
-    _replyDrawer->collapse();
 }
 
 void PostItemDetail::updateCommentList()
@@ -229,7 +245,7 @@ CommentWidget* PostItemDetail::createCommentWidget(std::shared_ptr<ReplyCommentD
 {
     CommentWidget* widget = new CommentWidget(comment, indent, this);
 
-    connect(widget, &CommentWidget::sigReplyButtonClicked, this, &PostItemDetail::slotReplyButtonClicked);
+    connect(widget, &CommentWidget::sigReplyButtonClicked, this, &PostItemDetail::sigReplyButtonClicked);
 
     //评论回复列表
     for (const auto& reply : comment->replys) {
@@ -261,8 +277,37 @@ void PostItemDetail::slotSendBtnClicked()
     emit sigSendCommentSuccess();
 }
 
-void PostItemDetail::slotReplyButtonClicked(std::shared_ptr<ReplyCommentData> data)
+void PostItemDetail::slotSendReply(std::shared_ptr<ReplyCommentData> data, const QString &text)
 {
-    qDebug() << "expand";
-    _replyDrawer->expand();
+    if (data) {
+        //查找data所在的布局位置
+        CommentWidget* posWid = nullptr;
+        for (int i = 0; i < _commentWidgets.count(); i++) {
+            if (_commentWidgets[i]->getData() == data) {
+                posWid = _commentWidgets[i];
+                break;
+            }
+        }
+
+        //插入回复
+        if (posWid) {
+            auto comment = std::make_shared<ReplyCommentData>(
+                "ee268",
+                QPixmap(),
+                "刚刚",
+                text);
+            comment->parent = data;
+            data->replys.push_back(comment);
+            CommentWidget* commentWid = createCommentWidget(comment, 1);
+
+            if (data->parent) {
+                posWid->parentWidget()->layout()->addWidget(commentWid);
+            } else {
+                posWid->layout()->addWidget(commentWid);
+            }
+            _commentWidgets.append(commentWid);
+
+            ElaMessageBar::success(ElaMessageBarType::Top, "成功", "已回复", 2000);
+        }
+    }
 }

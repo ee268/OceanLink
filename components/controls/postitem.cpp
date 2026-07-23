@@ -4,7 +4,6 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <QTextDocument>
-#include <QDebug>
 
 #include "displaycard.h"
 
@@ -148,7 +147,6 @@ void PostItem::initContent()
     commentText->setTextColorDark(Qt::white);
     connect(commentText, &IconText::sigClicked, this, [this]() {
         emit sigPostItemClicked(_data);
-        qDebug() << "clicked signal triggered";
     });
 
     IconText* collectText = new IconText(QString::number(_data.collectCnt), bottomWid);

@@ -2,7 +2,9 @@
 
 #include <QVBoxLayout>
 #include <QPainter>
+#include <QPainterPath>
 #include <QEvent>
+#include <QMouseEvent>
 
 #include "ElaTheme.h"
 #include "ElaIcon.h"
@@ -60,10 +62,12 @@ void PostPage::initRightWidget()
     refreshBtn->setFixedWidth(80);
     refreshBtn->setText("刷新");
 
-    ElaPushButton* publishPostBtn = new ElaPushButton(rightWid);
+    ThemeColorButton* publishPostBtn = new ThemeColorButton(rightWid);
     publishPostBtn->setBorderRadius(8);
     publishPostBtn->setFixedWidth(100);
     publishPostBtn->setText("写一篇");
+
+    connect(publishPostBtn, &ThemeColorButton::clicked, this, &PostPage::slotPublishBtnClicked);
 
     _backBtn = new ElaPushButton(rightWid);
     _backBtn->setBorderRadius(8);
@@ -95,6 +99,7 @@ void PostPage::initRightWidget()
     _postDetail = new PostItemDetail(PostData(), postScrollArea);
     postlayout->addWidget(_postDetail);
     postWid->setLayout(postlayout);
+    postWid->setStyleSheet("background-color: transparent");
 
     postScrollArea->setWidget(postWid);
     postScrollArea->setWidgetResizable(true);
@@ -106,6 +111,15 @@ void PostPage::initRightWidget()
         postScrollArea->verticalScrollBar()->setValue(480);
         ElaMessageBar::success(ElaMessageBarType::Top, "成功", "已发送", 2000);
     });
+
+    _replyEditArea = new ReplyEditArea(postScrollArea);
+
+    connect(_postDetail, &PostItemDetail::sigReplyButtonClicked, this, [this](auto data){
+        _replyEditArea->showAnimation();
+        _replyEditArea->setReplyCommentData(data);
+    });
+
+    connect(_replyEditArea, &ReplyEditArea::sigSendReplyBtnClicked, _postDetail, &PostItemDetail::slotSendReply);
 
     stackedWid->addWidget(wid);
     stackedWid->addWidget(postScrollArea);
@@ -153,6 +167,11 @@ void PostPage::slotBackBtnClicked()
 {
     this->setCurrentIndex(PostListPage);
     _backBtn->setHidden(true);
+}
+
+void PostPage::slotPublishBtnClicked()
+{
+
 }
 
 EveryoneButton::EveryoneButton(const QString &text, const QIcon &icon, QWidget *parent)
@@ -238,4 +257,122 @@ void EveryoneButton::paintEvent(QPaintEvent *event)
                    this->height());
     painter.setPen(ElaThemeColor(eTheme->getThemeMode(), BasicText));
     painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, _text);
+}
+
+ReplyEditArea::ReplyEditArea(QWidget *parent)
+    : QWidget(parent)
+{
+    setFixedHeight(100);
+    setHidden(true);
+    _isShow = false;
+
+    QHBoxLayout* layout = new QHBoxLayout(this);
+    layout->setContentsMargins(10, 10, 10, 10);
+    layout->setSpacing(10);
+
+    AvatarWidget* avatar = new AvatarWidget(this);
+    avatar->setFixedSize(40, 40);
+    avatar->setPixeSize(15);
+
+    _replyEdit = new ElaLineEdit(this);
+    _replyEdit->setPlaceholderText("写下你的回复...");
+
+    _sendBtn = new ThemeColorButton("发送", this);
+    _sendBtn->setBorderRadius(8);
+    _sendBtn->setFixedWidth(80);
+
+    connect(_sendBtn, &ThemeColorButton::clicked, this, &ReplyEditArea::slotSendBtnClicked);
+
+    layout->addWidget(avatar);
+    layout->addWidget(_replyEdit);
+    layout->addWidget(_sendBtn);
+    setLayout(layout);
+
+    _slideAnimation = new QPropertyAnimation(this, "geometry");
+    _slideAnimation->setDuration(300);
+    _slideAnimation->setEasingCurve(QEasingCurve::OutCubic);
+
+    if (parent) {
+        parent->installEventFilter(this);
+    }
+}
+
+void ReplyEditArea::showAnimation()
+{
+    if (_isShow) {
+        return;
+    }
+
+    QRect parentRect = parentWidget()->rect();
+    QRect startRect(parentRect.left(), parentRect.bottom(),
+                    parentRect.width(), height());
+    QRect endRect(parentRect.left(), parentRect.bottom() - height(),
+                  parentRect.width(), height());
+
+    _slideAnimation->setStartValue(startRect);
+    _slideAnimation->setEndValue(endRect);
+
+    setHidden(false);
+    _slideAnimation->start();
+    _isShow = true;
+}
+
+void ReplyEditArea::hideAnimation()
+{
+    QRect parentRect = parentWidget()->rect();
+    QRect startRect = geometry();
+    QRect endRect(parentRect.left(), parentRect.bottom(),
+                  parentRect.width(), height());
+
+    _slideAnimation->setStartValue(startRect);
+    _slideAnimation->setEndValue(endRect);
+    _slideAnimation->start();
+    _isShow = false;
+}
+
+void ReplyEditArea::setReplyCommentData(std::shared_ptr<ReplyCommentData> data)
+{
+    _data = data;
+}
+
+void ReplyEditArea::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    painter.setRenderHints(QPainter::Antialiasing);
+    painter.setPen(Qt::NoPen);
+
+    int shadowBorderWidth = 6;
+    int borderRadius = 8;
+
+    eTheme->drawEffectShadow(&painter, rect(), shadowBorderWidth, borderRadius);
+
+    QRect foregroundRect(shadowBorderWidth, shadowBorderWidth,
+                         width() - 2 * shadowBorderWidth, height() - 2 * shadowBorderWidth);
+    painter.setBrush(ElaThemeColor(eTheme->getThemeMode(), BasicBase));
+    painter.drawRoundedRect(foregroundRect, borderRadius, borderRadius);
+
+    QWidget::paintEvent(event);
+}
+
+bool ReplyEditArea::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == parentWidget() && event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(event);
+        if (!geometry().contains(mouseEvent->pos())) {
+            hideAnimation();
+        }
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
+void ReplyEditArea::slotSendBtnClicked()
+{
+    QString text = _replyEdit->text();
+    if (text.isEmpty() || !_data) {
+        return;
+    }
+
+    _replyEdit->clear();
+    emit sigSendReplyBtnClicked(_data, text);
+    hideAnimation();
 }

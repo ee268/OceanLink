@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ElaLineEdit.h"
-#include "ElaDrawerArea.h"
 
 class IconText;
 
@@ -24,7 +23,9 @@ struct ReplyCommentData {
 
     ReplyCommentData(const QString& name, const QPixmap& avatar,
                      const QString& date, const QString& content)
-        : name(name), avatar(avatar), date(date), content(content)
+        : name(name), avatar(avatar)
+        , date(date), content(content)
+        , parent(nullptr)
     {}
 };
 
@@ -33,6 +34,8 @@ class CommentWidget : public QWidget
     Q_OBJECT
 public:
     explicit CommentWidget(std::shared_ptr<ReplyCommentData> data, int indent = 0, QWidget* parent = nullptr);
+
+    std::shared_ptr<ReplyCommentData> getData() const;
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
@@ -63,21 +66,23 @@ private:
     CommentWidget* createCommentWidget(std::shared_ptr<ReplyCommentData>, int indent = 0);
 
 private:
+    QWidget* _centralWid;
     std::vector<std::shared_ptr<ReplyCommentData>> _comments;
     ElaLineEdit* _commentEdit;
     QWidget* _commentListWid;
     QVBoxLayout* _commentListLayout;
     QList<CommentWidget*> _commentWidgets;
 
-    ElaDrawerArea* _replyDrawer;
-
 signals:
     void sigSendCommentSuccess();
+
+    void sigReplyButtonClicked(std::shared_ptr<ReplyCommentData> data);
 
 private slots:
     void slotSendBtnClicked();
 
-    void slotReplyButtonClicked(std::shared_ptr<ReplyCommentData> data);
+public slots:
+    void slotSendReply(std::shared_ptr<ReplyCommentData> data, const QString& text);
 };
 
 #endif // POSTITEMDETAIL_H
