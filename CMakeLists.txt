@@ -14,8 +14,6 @@ add_compile_options(/utf-8)
 
 # 查找Qt5
 find_package(Qt5 REQUIRED COMPONENTS Widgets WidgetsPrivate)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 # 查找ElaWidgetTools
 set(ELAWIDGETTOOLS_INSTALL_DIR "D:/1code/ElaWidgetTools/Install/ElaWidgetTools" CACHE PATH "ElaWidgetTools prebuilt installation path")
@@ -40,19 +38,11 @@ set(PROJECT_SOURCES
 )
 
 # 创建可执行文件
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
-    components/controls/splitline.h components/controls/splitline.cpp
-    components/controls/themecolorbutton.h components/controls/themecolorbutton.cpp
-    components/controls/postlist.h components/controls/postlist.cpp
-    components/controls/postitem.h components/controls/postitem.cpp
-    components/controls/avatarwidget.h components/controls/avatarwidget.cpp)
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
 
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
 # 链接库
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt5::Widgets
@@ -60,7 +50,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Ela::WidgetTools
 )
 
-# Windows平台需要链接D3D11和DXGI
+# 模糊窗口需要链接D3D11和DXGI
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         D3D11

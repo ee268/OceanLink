@@ -10,6 +10,7 @@
 #include "../controls/postlist.h"
 #include "../controls/postitemdetail.h"
 #include "../controls/themecolorbutton.h"
+#include "../controls/publishposteditarea.h"
 
 #include "ElaLineEdit.h"
 
@@ -67,7 +68,7 @@ class PostPage : public BasePage
     Q_OBJECT
 public:
     explicit PostPage(QWidget* parent = nullptr);
-    ~PostPage() = default;
+    ~PostPage();
 
     enum {
         PostListPage = 1,
@@ -84,6 +85,7 @@ private:
     PostList* _postList;
     PostItemDetail* _postDetail;
     ReplyEditArea* _replyEditArea;
+    PublishPostEditArea* _publishArea;
 
 private slots:
     void slotPostItemClicked(const PostData& data);

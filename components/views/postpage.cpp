@@ -19,6 +19,13 @@ PostPage::PostPage(QWidget *parent/* = nullptr*/)
     initDefaultLayout();
     initLeftWidget();
     initRightWidget();
+
+    _publishArea = new PublishPostEditArea(nullptr);
+}
+
+PostPage::~PostPage()
+{
+    delete _publishArea;
 }
 
 void PostPage::initLeftWidget()
@@ -171,7 +178,7 @@ void PostPage::slotBackBtnClicked()
 
 void PostPage::slotPublishBtnClicked()
 {
-
+    _publishArea->open();
 }
 
 EveryoneButton::EveryoneButton(const QString &text, const QIcon &icon, QWidget *parent)
