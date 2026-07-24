@@ -67,6 +67,7 @@ void PostList::initContent()
     QWidget* contentWidget = new QWidget(this);
     QVBoxLayout* mainLayout = new QVBoxLayout(contentWidget);
 
+    mainLayout->setDirection(QVBoxLayout::BottomToTop);
     mainLayout->setContentsMargins(20, 0, 20, 20);
     mainLayout->setSpacing(25);
     mainLayout->addStretch();

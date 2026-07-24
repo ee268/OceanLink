@@ -24,7 +24,6 @@
         <file>resource/image/contact/chevron-forward-outline.png</file>
         <file>resource/image/logo/Ocean.png</file>
         <file>resource/image/logo/Ocean_gray.png</file>
-        <file>resource/image/logo/Ocean_hasBackground.png</file>
         <file>resource/image/logo/OceanLink.png</file>
         <file>resource/image/about/code-slash-outline.png</file>
         <file>resource/image/about/easel-outline.png</file>
@@ -36,5 +35,6 @@
         <file>resource/image/contact/detail/create-outline.png</file>
         <file>resource/image/contact/detail/pencil-outline.png</file>
         <file>resource/image/contact/detail/people-outline.png</file>
+        <file>resource/image/logo/Ocean_hasBackground.png</file>
     </qresource>
 </RCC>

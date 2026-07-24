@@ -1,4 +1,4 @@
-#include "publishposteditarea.h"
+#include "publishposteditdialog.h"
 
 #include <QVBoxLayout>
 #include <QFileDialog>
@@ -13,7 +13,7 @@
 #include "ElaScrollBar.h"
 #include "ElaMessageBar.h"
 
-PublishPostEditArea::PublishPostEditArea(QWidget *parent)
+PublishPostEditDialog::PublishPostEditDialog(QWidget *parent)
     : ElaDialog(parent)
     , _textEdit(new ElaPlainTextEdit(this))
     , _publishBtn(new ThemeColorButton("发布", this))
@@ -29,17 +29,17 @@ PublishPostEditArea::PublishPostEditArea(QWidget *parent)
     this->setIsFixedSize(true);
 }
 
-QString PublishPostEditArea::getText() const
+QString PublishPostEditDialog::getText() const
 {
     return _textEdit->toPlainText();
 }
 
-QStringList PublishPostEditArea::getImgList() const
+QStringList PublishPostEditDialog::getImgList() const
 {
     return _imgList;
 }
 
-bool PublishPostEditArea::eventFilter(QObject *obj, QEvent *event)
+bool PublishPostEditDialog::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == _uploadWid) {
         if (event->type() == QEvent::MouseButtonPress) {
@@ -53,7 +53,7 @@ bool PublishPostEditArea::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
-void PublishPostEditArea::initContent()
+void PublishPostEditDialog::initContent()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(20, 20, 20, 20);
@@ -104,6 +104,8 @@ void PublishPostEditArea::initContent()
     //发布按钮
     _publishBtn->setFixedWidth(80);
 
+    connect(_publishBtn, &ThemeColorButton::clicked, this, &PublishPostEditDialog::slotPublishClicked);
+
     QWidget* secondRow = new QWidget(this);
     QHBoxLayout* secondRowLayout = new QHBoxLayout(secondRow);
     secondRowLayout->setContentsMargins(0, 0, 0, 0);
@@ -117,10 +119,10 @@ void PublishPostEditArea::initContent()
 
     slotUpdateBasicBaseStyle();
 
-    connect(eTheme, &ElaTheme::themeModeChanged, this, &PublishPostEditArea::slotUpdateBasicBaseStyle);
+    connect(eTheme, &ElaTheme::themeModeChanged, this, &PublishPostEditDialog::slotUpdateBasicBaseStyle);
 }
 
-void PublishPostEditArea::slotUpdateBasicBaseStyle()
+void PublishPostEditDialog::slotUpdateBasicBaseStyle()
 {
     _firstRow->setStyleSheet(
         QString("background-color: %1; border-radius: 8px;")
@@ -131,7 +133,19 @@ void PublishPostEditArea::slotUpdateBasicBaseStyle()
             .arg(ElaThemeColor(eTheme->getThemeMode(), BasicHover).name()));
 }
 
-void PublishPostEditArea::selectImages()
+void PublishPostEditDialog::slotPublishClicked()
+{
+    QString plainText = _textEdit->toPlainText();
+    if (plainText.isEmpty()) {
+        ElaMessageBar::warning(ElaMessageBarType::Top, "提示", "请输入内容", 2000, this);
+        return;
+    }
+
+    _textEdit->clear();
+    emit sigPublishClicked(plainText);
+}
+
+void PublishPostEditDialog::selectImages()
 {
     QString filter = "图片文件 (*.png *.jpg *.jpeg *.gif)";
     QStringList files = QFileDialog::getOpenFileNames(this, "选择图片", QString(), filter);

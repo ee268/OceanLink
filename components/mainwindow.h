@@ -10,6 +10,7 @@
 #include "controls/moreoptpopup.h"
 #include "views/loginregisterdialog.h"
 #include "controls/confirmdialog.h"
+#include "views/settingspage.h"
 
 class MainWindow : public ElaWindow
 {
@@ -23,6 +24,9 @@ private:
 
     void initContent();
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
 private:
     ConfirmDialog* _closeConfirmDialog;
     ConfirmDialog* _logoutConfirmDialog;
@@ -35,6 +39,7 @@ private:
     AboutPage* _aboutPage;
     CollectPage* _collectPage;
     MoreOptPopup* _moreOptPopup;
+    SettingsPage* _settingsPage;
 
     QString _aboutKey;
     QString _collectKey;
@@ -46,7 +51,7 @@ public slots:
     void slotLoginSuccess();
     void slotLoginFailed();
 
-    void slotLogout(const QString& key);
+    void slotMoreOptionClicked(const QString& key);
     void slotSwitchToLogin();
 
     void slotShowRegisterPage();

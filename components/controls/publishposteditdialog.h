@@ -1,16 +1,16 @@
-#ifndef PUBLISHPOSTEDITAREA_H
-#define PUBLISHPOSTEDITAREA_H
+#ifndef PUBLISHPOSTEDITDIALOG_H
+#define PUBLISHPOSTEDITDIALOG_H
 
 #include "ElaDialog.h"
 #include "ElaPlainTextEdit.h"
 #include "themecolorbutton.h"
 
-class PublishPostEditArea : public ElaDialog
+class PublishPostEditDialog : public ElaDialog
 {
     Q_OBJECT
 public:
-    explicit PublishPostEditArea(QWidget* parent = nullptr);
-    ~PublishPostEditArea() = default;
+    explicit PublishPostEditDialog(QWidget* parent = nullptr);
+    ~PublishPostEditDialog() = default;
 
     QString getText() const;
     QStringList getImgList() const;
@@ -31,11 +31,12 @@ private:
     QStringList _imgList;
 
 signals:
-    void sigPublishClicked();
+    void sigPublishClicked(const QString& text);
 
 private slots:
     void slotUpdateBasicBaseStyle();
 
+    void slotPublishClicked();
 };
 
-#endif // PUBLISHPOSTEDITAREA_H
+#endif // PUBLISHPOSTEDITDIALOG_H

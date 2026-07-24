@@ -10,7 +10,7 @@
 #include "../controls/postlist.h"
 #include "../controls/postitemdetail.h"
 #include "../controls/themecolorbutton.h"
-#include "../controls/publishposteditarea.h"
+#include "../controls/publishposteditdialog.h"
 
 #include "ElaLineEdit.h"
 
@@ -44,6 +44,9 @@ public:
 
     void setReplyCommentData(std::shared_ptr<ReplyCommentData> data);
 
+    bool getIsShow() const;
+    void setIsShow(bool isShow);
+
 protected:
     void paintEvent(QPaintEvent* event) override;
     bool eventFilter(QObject* obj, QEvent* event) override;
@@ -75,6 +78,9 @@ public:
         PostDetailPage
     };
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
 private:
     void initLeftWidget();
     void initRightWidget();
@@ -83,16 +89,20 @@ private:
     ElaPushButton* _backBtn;
     SpaceList* _spaceList;
     PostList* _postList;
+
     PostItemDetail* _postDetail;
+
     ReplyEditArea* _replyEditArea;
-    PublishPostEditArea* _publishArea;
+    PublishPostEditDialog* _publishArea;
 
 private slots:
     void slotPostItemClicked(const PostData& data);
 
     void slotBackBtnClicked();
 
-    void slotPublishBtnClicked();
+    void slotWritePostBtnClicked();
+
+    void slotPublishClicked(const QString& text);
 };
 
 #endif // POSTPAGE_H

@@ -4,6 +4,7 @@
 #include <QPainterPath>
 
 #include "sessionlistmodel.h"
+
 #include "ElaTheme.h"
 
 SessionListDelegate::SessionListDelegate(QObject *parent)

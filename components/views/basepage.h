@@ -19,8 +19,9 @@ public:
 
     void setCurrentIndex(int index);
 
-protected:
     void initDefaultLayout();
+
+protected:
 
     void resizeEvent(QResizeEvent *event) override;
 

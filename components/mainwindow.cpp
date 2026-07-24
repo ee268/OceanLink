@@ -9,6 +9,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : ElaWindow(parent)
     , _loginRegisterDialog(new LoginRegisterDialog(nullptr))
+    , _settingsPage(new SettingsPage(nullptr))
 {
     initWindow();
 
@@ -21,6 +22,12 @@ MainWindow::~MainWindow()
         _loginRegisterDialog->close();
         delete _loginRegisterDialog;
         _loginRegisterDialog = nullptr;
+    }
+
+    if (_settingsPage) {
+        _settingsPage->close();
+        delete _settingsPage;
+        _settingsPage = nullptr;
     }
 }
 
@@ -92,7 +99,7 @@ void MainWindow::initContent()
     _logoutConfirmDialog->setSubTitleText("确定要退出账号吗？");
     _logoutConfirmDialog->setCheckBoxHidden(true);
 
-    connect(_moreOptPopup, &MoreOptPopup::sigOptionClicked, this, &MainWindow::slotLogout);
+    connect(_moreOptPopup, &MoreOptPopup::sigOptionClicked, this, &MainWindow::slotMoreOptionClicked);
     connect(_logoutConfirmDialog, &ConfirmDialog::rightButtonClicked,
             this, &MainWindow::slotSwitchToLogin);
 
@@ -117,10 +124,13 @@ void MainWindow::slotLoginFailed()
 
 }
 
-void MainWindow::slotLogout(const QString& key)
+void MainWindow::slotMoreOptionClicked(const QString& key)
 {
     if (key == _logoutKey) {
         _logoutConfirmDialog->show();
+    }
+    else if (key == _settingKey) {
+        _settingsPage->show();
     }
 }
 
@@ -143,5 +153,16 @@ void MainWindow::slotShowLoginPage()
 void MainWindow::slotShowConfirmDialog()
 {
     _closeConfirmDialog->show();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (_loginRegisterDialog) {
+        _loginRegisterDialog->close();
+    }
+    if (_settingsPage) {
+        _settingsPage->close();
+    }
+    ElaWindow::closeEvent(event);
 }
 

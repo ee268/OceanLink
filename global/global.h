@@ -22,4 +22,11 @@ enum Sex{
     Secret
 };
 
+//收藏类型
+enum CollectType {
+    None,               //无
+    ChatMessage = 1,    //聊天记录
+    SpacePost           //空间文章
+};
+
 #endif // GLOBAL_H

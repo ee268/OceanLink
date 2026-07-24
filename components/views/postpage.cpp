@@ -20,12 +20,23 @@ PostPage::PostPage(QWidget *parent/* = nullptr*/)
     initLeftWidget();
     initRightWidget();
 
-    _publishArea = new PublishPostEditArea(nullptr);
+    _publishArea = new PublishPostEditDialog(nullptr);
+    connect(_publishArea, &PublishPostEditDialog::sigPublishClicked, this, &PostPage::slotPublishClicked);
 }
 
 PostPage::~PostPage()
 {
     delete _publishArea;
+}
+
+void PostPage::resizeEvent(QResizeEvent *event)
+{
+    if (_replyEditArea->getIsShow()) {
+        _replyEditArea->setIsShow(false);
+        _replyEditArea->showAnimation();
+    }
+
+    BasePage::resizeEvent(event);
 }
 
 void PostPage::initLeftWidget()
@@ -74,7 +85,7 @@ void PostPage::initRightWidget()
     publishPostBtn->setFixedWidth(100);
     publishPostBtn->setText("写一篇");
 
-    connect(publishPostBtn, &ThemeColorButton::clicked, this, &PostPage::slotPublishBtnClicked);
+    connect(publishPostBtn, &ThemeColorButton::clicked, this, &PostPage::slotWritePostBtnClicked);
 
     _backBtn = new ElaPushButton(rightWid);
     _backBtn->setBorderRadius(8);
@@ -115,7 +126,6 @@ void PostPage::initRightWidget()
     scrollBar->setIsAnimation(true);
 
     connect(_postDetail, &PostItemDetail::sigSendCommentSuccess, this, [postScrollArea](){
-        postScrollArea->verticalScrollBar()->setValue(480);
         ElaMessageBar::success(ElaMessageBarType::Top, "成功", "已发送", 2000);
     });
 
@@ -176,9 +186,28 @@ void PostPage::slotBackBtnClicked()
     _backBtn->setHidden(true);
 }
 
-void PostPage::slotPublishBtnClicked()
+void PostPage::slotWritePostBtnClicked()
 {
     _publishArea->open();
+}
+
+void PostPage::slotPublishClicked(const QString &text)
+{
+    PostData data(
+        "ee268",
+        "123123",
+        "today",
+        QPixmap(),
+        QList<QPixmap>(),
+        "hello world!!!!!!!!!!!!!!!",
+        0, 0, 0, "123");
+
+
+    _postList->addPost(data);
+
+    ElaMessageBar::success(ElaMessageBarType::Top, "成功", "已发布", 2000);
+
+    _publishArea->close();
 }
 
 EveryoneButton::EveryoneButton(const QString &text, const QIcon &icon, QWidget *parent)
@@ -342,6 +371,16 @@ void ReplyEditArea::setReplyCommentData(std::shared_ptr<ReplyCommentData> data)
     _data = data;
 }
 
+bool ReplyEditArea::getIsShow() const
+{
+    return _isShow;
+}
+
+void ReplyEditArea::setIsShow(bool isShow)
+{
+    _isShow = isShow;
+}
+
 void ReplyEditArea::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -369,6 +408,7 @@ bool ReplyEditArea::eventFilter(QObject *obj, QEvent *event)
             hideAnimation();
         }
     }
+
     return QWidget::eventFilter(obj, event);
 }
 
