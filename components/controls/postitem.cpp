@@ -61,7 +61,7 @@ void PostItem::initContent()
     mainLayout->setContentsMargins(15, 10, 15, 10);
     mainLayout->setSpacing(8);
 
-    // 第一行：avatar + name（左），date（右）
+    //头像、姓名、日期
     QWidget* topWid = new QWidget(this);
     QHBoxLayout* topLayout = new QHBoxLayout(topWid);
     topLayout->setContentsMargins(0, 0, 0, 0);
@@ -93,7 +93,7 @@ void PostItem::initContent()
 
     mainLayout->addWidget(topWid);
 
-    // 第二行：content（固定高度，超出省略）+ imgList
+    //内容、图片列表
     QWidget* midWid = new QWidget(this);
     QVBoxLayout* midLayout = new QVBoxLayout(midWid);
     midLayout->setContentsMargins(0, 0, 0, 0);
@@ -126,7 +126,7 @@ void PostItem::initContent()
 
     mainLayout->addWidget(midWid);
 
-    // 第三行：likeCnt、commentCnt、collectCnt
+    //计数
     QWidget* bottomWid = new QWidget(this);
     QHBoxLayout* bottomLayout = new QHBoxLayout(bottomWid);
     bottomLayout->setContentsMargins(0, 0, 0, 0);

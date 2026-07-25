@@ -163,6 +163,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (_settingsPage) {
         _settingsPage->close();
     }
+
     ElaWindow::closeEvent(event);
 }
 

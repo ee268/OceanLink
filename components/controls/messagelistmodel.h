@@ -5,7 +5,7 @@
 #include <QList>
 #include <QPixmap>
 
-struct MessageItem {
+struct MessageItemData {
     bool isSelf;
     QString msg;
     QString date;
@@ -23,7 +23,7 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    void addItem(MessageItem item);
+    void addItem(MessageItemData item);
 
 public:
     enum {
@@ -35,7 +35,7 @@ public:
     };
 
 private:
-    QList<MessageItem> _itemList;
+    QList<MessageItemData> _itemList;
 };
 
 #endif // MESSAGELISTMODEL_H

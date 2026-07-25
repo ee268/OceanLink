@@ -29,4 +29,6 @@ enum CollectType {
     SpacePost           //空间文章
 };
 
+Q_DECLARE_METATYPE(CollectType)
+
 #endif // GLOBAL_H

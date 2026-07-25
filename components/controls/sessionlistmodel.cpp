@@ -23,7 +23,7 @@ QVariant SessionListModel::data(const QModelIndex &index, int role) const
     }
 
     int row = index.row();
-    UserItem item = _itemList.at(row);
+    UserItemData item = _itemList.at(row);
 
     switch(role) {
     case Name:
@@ -45,7 +45,7 @@ QVariant SessionListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-void SessionListModel::addItem(UserItem item)
+void SessionListModel::addItem(UserItemData item)
 {
     beginInsertRows(QModelIndex(), _itemList.size(), _itemList.size());
     _itemList.append(item);

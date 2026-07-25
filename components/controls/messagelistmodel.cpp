@@ -17,7 +17,7 @@ QVariant MessageListModel::data(const QModelIndex &index, int role) const
     }
 
     int row = index.row();
-    MessageItem item = _itemList.at(row);
+    MessageItemData item = _itemList.at(row);
 
     switch(role) {
     case Msg:
@@ -37,7 +37,7 @@ QVariant MessageListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-void MessageListModel::addItem(MessageItem item)
+void MessageListModel::addItem(MessageItemData item)
 {
     beginInsertRows(QModelIndex(), _itemList.size(), _itemList.size());
     _itemList.append(item);

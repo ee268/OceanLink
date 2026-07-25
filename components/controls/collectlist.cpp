@@ -1,12 +1,15 @@
 #include "collectlist.h"
 
-#include "collectlistmodel.h"
-#include "collectlistdelegate.h"
+#include <QMouseEvent>
+
+#include "ElaIcon.h"
 
 CollectList::CollectList(QWidget *parent)
     : ElaListView(parent)
     , _model(new CollectListModel(this))
     , _delegate(new CollectListDelegate(this))
+    , _rightOptions(nullptr)
+    , _detailDialog(nullptr)
 {
     setObjectName("CollectList");
     setStyleSheet("#CollectList { background-color: transparent; border: none; }");
@@ -15,10 +18,65 @@ CollectList::CollectList(QWidget *parent)
     setItemDelegate(_delegate);
 
     initTestData();
+
+    _rightOptions = new MoreOptPopup(this);
+    _multiSelectKey = "multiSelectKey";
+    _delKey = "delKey";
+    _rightOptions->addOption(
+        "多选",
+        ElaIcon::getInstance()->getElaIcon(ElaIconType::CircleCheck),
+        _multiSelectKey, nullptr);
+    _rightOptions->addOption(
+        "删除",
+        ElaIcon::getInstance()->getElaIcon(ElaIconType::TrashCan),
+        _delKey, nullptr);
 }
 
 CollectList::~CollectList()
 {
+    if (_detailDialog) {
+        _detailDialog->close();
+        _detailDialog->deleteLater();
+        _detailDialog = nullptr;
+    }
+}
+
+void CollectList::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::RightButton) {
+        QModelIndex index = this->indexAt(event->pos());
+
+        if (index.isValid()) {
+            _rightOptions->show();
+        }
+    }
+    else if (event->button() == Qt::LeftButton) {
+        QModelIndex index = this->indexAt(event->pos());
+
+        if (index.isValid()) {
+            QString sourceName = index.data(CollectListModel::SourceName).toString();
+            QString date = index.data(CollectListModel::Date).toString();
+            CollectDetailData data;
+            data.name = sourceName;
+            data.date = date;
+            data.type = index.data(CollectListModel::Type).value<CollectType>();
+            data.content = "1231231231231231231231231231313131313131";
+            data.imgList = {QPixmap(":/resource/image/avatar.jpg"),
+                            QPixmap(":/resource/image/rupa.jpg"),
+                            QPixmap(":/resource/image/rupa.jpg")};
+
+            if (!_detailDialog) {
+                _detailDialog = new CollectDetailDialog(data, nullptr);
+            }
+            else {
+                _detailDialog->updateData(data);
+            }
+
+            _detailDialog->open();
+        }
+    }
+
+    ElaListView::mousePressEvent(event);
 }
 
 void CollectList::initTestData()

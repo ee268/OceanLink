@@ -17,16 +17,6 @@ struct FriendNotifyData {
     bool isSelf;                  //true为我向他人发送，false为他人向我发送
     FriendNotifyStatus status;    //通知状态
 
-    FriendNotifyData& operator=(const FriendNotifyData& other){
-        avatar = other.avatar;
-        name = other.name;
-        date = other.date;
-        msg = other.msg;
-        isSelf = other.isSelf;
-        status = other.status;
-
-        return *this;
-    }
     FriendNotifyData& operator=(FriendNotifyData& other){
         avatar = other.avatar;
         name = other.name;

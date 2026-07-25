@@ -44,6 +44,8 @@ void CollectPage::initLeftWidget()
     leftLayout->addWidget(_navigationBar);
     leftWid->setLayout(leftLayout);
 
+
+
     connect(_navigationBar, &ElaNavigationBar::navigationNodeClicked,
             this, [this](ElaNavigationType::NavigationNodeType nodeType, QString nodeKey, bool isRouteBack) {
         QStackedWidget* stackedWid = this->getStackedWidget();

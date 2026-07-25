@@ -5,7 +5,7 @@
 #include <QList>
 #include <QPixmap>
 
-struct UserItem {
+struct UserItemData {
     QString name;
     QString latest_msg;
     QString latest_date;
@@ -33,10 +33,10 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    void addItem(UserItem item);
+    void addItem(UserItemData item);
 
 private:
-    QList<UserItem> _itemList;
+    QList<UserItemData> _itemList;
 };
 
 #endif // SESSIONLISTMODEL_H

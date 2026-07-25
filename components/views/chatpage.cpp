@@ -278,7 +278,7 @@ void ChatPage::slotClickedSendButton()
 
     if (text > 0) {
         auto msgModel = _msgList->getModel();
-        MessageItem item;
+        MessageItemData item;
         item.isSelf = true;
         item.msg = text;
         item.name = "XunLink";

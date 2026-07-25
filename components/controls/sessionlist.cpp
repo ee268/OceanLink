@@ -15,7 +15,7 @@ SessionList::SessionList(QWidget *parent)
     setStyleSheet("#SessionList { border: none; background-color: transparent; }");
 
     for (int i = 0; i < 20; i++) {
-        UserItem item;
+        UserItemData item;
         item.name = QString("一二三四五六齐吧就时是%1").arg(i + 1);
         item.latest_msg = QString("这是第 %1 条消息123123123123123123123123123123123123123").arg(i + 1);
         item.latest_date = "2026/12/23";

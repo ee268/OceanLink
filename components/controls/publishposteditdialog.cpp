@@ -25,6 +25,7 @@ PublishPostEditDialog::PublishPostEditDialog(QWidget *parent)
     this->setWindowButtonFlags(ElaAppBarType::CloseButtonHint |
                                ElaAppBarType::MinimizeButtonHint |
                                ElaAppBarType::StayTopButtonHint);
+
     this->setSizeGripEnabled(false);
     this->setIsFixedSize(true);
 }
