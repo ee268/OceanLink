@@ -14,6 +14,11 @@ add_compile_options(/utf-8)
 
 # 查找Qt5
 find_package(Qt5 REQUIRED COMPONENTS Widgets WidgetsPrivate)
+find_package(Qt5 REQUIRED COMPONENTS Core)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 # 查找ElaWidgetTools
 set(ELAWIDGETTOOLS_INSTALL_DIR "D:/1code/ElaWidgetTools/Install/ElaWidgetTools" CACHE PATH "ElaWidgetTools prebuilt installation path")
@@ -39,9 +44,20 @@ set(PROJECT_SOURCES
 
 # 创建可执行文件
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
-    components/views/settingspage.h components/views/settingspage.cpp)
+    components/views/settingspage.h components/views/settingspage.cpp
+    components/views/settings/notifypage.h components/views/settings/notifypage.cpp
+    components/controls/borderwidget.h components/controls/borderwidget.cpp
+    components/views/settings/storagepage.h components/views/settings/storagepage.cpp
+    components/views/settings/basecreateoption.h components/views/settings/basecreateoption.cpp
+    components/views/settings/shorcutkeypage.h components/views/settings/shorcutkeypage.cpp
+    components/views/settings/permissionpage.h components/views/settings/permissionpage.cpp)
 
 
+target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
+target_link_libraries(OceanLink PRIVATE Qt5::Core)
+target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
+target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
+target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 
 # 链接库

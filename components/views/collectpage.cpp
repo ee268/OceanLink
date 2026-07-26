@@ -44,8 +44,6 @@ void CollectPage::initLeftWidget()
     leftLayout->addWidget(_navigationBar);
     leftWid->setLayout(leftLayout);
 
-
-
     connect(_navigationBar, &ElaNavigationBar::navigationNodeClicked,
             this, [this](ElaNavigationType::NavigationNodeType nodeType, QString nodeKey, bool isRouteBack) {
         QStackedWidget* stackedWid = this->getStackedWidget();
@@ -53,7 +51,7 @@ void CollectPage::initLeftWidget()
             for (int i = 0; i < stackedWid->count(); i++) {
                 QWidget* page = stackedWid->widget(i);
                 if (page && page->property("ElaPageKey").toString() == nodeKey) {
-                    stackedWid->setCurrentIndex(i);
+                    this->setCurrentIndex(i);
                     break;
                 }
             }
