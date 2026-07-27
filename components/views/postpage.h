@@ -9,11 +9,8 @@
 #include "../controls/spacelist.h"
 #include "../controls/postlist.h"
 #include "../controls/postitemdetail.h"
-#include "../controls/themecolorbutton.h"
 #include "../controls/publishposteditdialog.h"
 #include "../controls/replyeditarea.h"
-
-#include "ElaLineEdit.h"
 
 class EveryoneButton: public QPushButton
 {

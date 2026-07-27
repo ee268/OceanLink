@@ -14,5 +14,9 @@ void StoragePage::initContent()
 
     layout()->addWidget(createButtonOption("聊天数据保存到", "更改"));
     layout()->addWidget(createButtonOption("接收的文件保存到", "更改"));
+
+    layout()->addWidget(createButtonOption("导入备份", "导入"));
+    layout()->addWidget(createButtonOption("备份所有数据", "备份"));
+
     layout()->addStretch();
 }

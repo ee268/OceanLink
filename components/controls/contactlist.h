@@ -22,6 +22,8 @@ public:
 
     void changeContactGroup(const QModelIndex& index, const QString& newGroup);
 
+    void addGroup(const QString& groupName);
+
 private:
     ContactListModel* _model;
     ContactListDelegate* _delegate;

@@ -32,6 +32,11 @@ void ContactList::changeContactGroup(const QModelIndex &index, const QString &ne
     this->setCurrentIndex(index);
 }
 
+void ContactList::addGroup(const QString& groupName)
+{
+    _model->addGroup(groupName);
+}
+
 void ContactList::slotContactClicked(const QModelIndex &index)
 {
     bool isGroupItem = index.data(ContactListModel::IsGroup).toBool();

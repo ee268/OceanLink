@@ -19,6 +19,7 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 # 查找ElaWidgetTools
 set(ELAWIDGETTOOLS_INSTALL_DIR "D:/1code/ElaWidgetTools/Install/ElaWidgetTools" CACHE PATH "ElaWidgetTools prebuilt installation path")
@@ -50,11 +51,14 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
     components/views/settings/storagepage.h components/views/settings/storagepage.cpp
     components/views/settings/basecreateoption.h components/views/settings/basecreateoption.cpp
     components/views/settings/shorcutkeypage.h components/views/settings/shorcutkeypage.cpp
-    components/views/settings/permissionpage.h components/views/settings/permissionpage.cpp)
+    components/views/settings/permissionpage.h components/views/settings/permissionpage.cpp
+    components/views/contact/contactdetailwid.h components/views/contact/contactdetailwid.cpp
+    components/views/contact/groupmgrdialog.h components/views/contact/groupmgrdialog.cpp)
 
 
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 target_link_libraries(OceanLink PRIVATE Qt5::Core)
+target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)

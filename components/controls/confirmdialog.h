@@ -29,6 +29,7 @@ private:
     void initContent();
 
 private:
+    QWidget* _centralWid;
     ElaCheckBox* _isAlwaysAsk;
     ElaText* _title;
     ElaText* _subTitle;
