@@ -1,6 +1,7 @@
 #include "groupmgrdialog.h"
 
 #include <QVBoxLayout>
+#include <QDebug>
 
 #include "../basepage.h"
 #include "../../controls/themecolorbutton.h"
@@ -35,12 +36,30 @@ void GroupMgrDialog::initContent()
 
     _navigation->setUserInfoCardVisible(false);
 
-    _navigation->addPageNode("所有好友", new QWidget(this), ElaIconType::Users);
+    _allFriendGroup = new  QWidget(this);
+    _allFriendGroup->setProperty("GroupName", "AllFriend");
+
+    _groupList = new GroupMgrList(this);
+
+    QVBoxLayout* allFriendLayout = new QVBoxLayout(_allFriendGroup);
+    allFriendLayout->setContentsMargins(0, 0, 0, 0);
+    allFriendLayout->setSpacing(0);
+    allFriendLayout->addWidget(_groupList);
+    _allFriendGroup->setLayout(allFriendLayout);
+
+    centralWid->getStackedWidget()->addWidget(_allFriendGroup);
+
+    initGroupList();
+
+    _navigation->addPageNode("所有好友", _allFriendGroup, ElaIconType::Users);
     _navigation->addCategoryNode("分组", _groupKey);
 
     QStringList groupNames = _contactList->getGroupNames();
     for (auto& name : groupNames) {
-        _navigation->addPageNode(name, new QWidget(this), ElaIconType::User);
+        QWidget* widget = new QWidget(this);
+        widget->setProperty("GroupName", name);
+        _otherGroups.append(widget);
+        _navigation->addPageNode(name, widget, ElaIconType::User);
     }
 
     _navigation->addFooterNode("添加分组", nullptr, _addGroupKey, 0, ElaIconType::Plus);
@@ -72,7 +91,41 @@ void GroupMgrDialog::initContent()
 
     mainLayout->addWidget(_centralWid);
 
+    centralWid->getStackedWidget()->setCurrentIndex(1);
+
     this->setLayout(mainLayout);
+}
+
+void GroupMgrDialog::initGroupList()
+{
+    auto centralWid = dynamic_cast<BasePage*>(_centralWid);
+    QWidget* headerWid = new QWidget(this);
+    QHBoxLayout* headerLayout = new QHBoxLayout(this);
+    headerLayout->setContentsMargins(5, 5, 5, 5);
+
+    _allRadioBtn = new ElaRadioButton(this);
+
+    connect(_allRadioBtn, &ElaRadioButton::clicked, this, &GroupMgrDialog::slotClickedRadioBtn);
+
+    ElaText* name = new ElaText("昵称", this);
+    name->setTextStyle(ElaTextType::Body);
+
+    ElaText* nickName = new ElaText("备注", this);
+    nickName->setTextStyle(ElaTextType::Body);
+
+    ElaText* groupName = new ElaText("分组", this);
+    groupName->setTextStyle(ElaTextType::Body);
+    groupName->setFixedWidth(80);
+
+    headerLayout->addWidget(_allRadioBtn, 0, Qt::AlignLeft);
+    headerLayout->addWidget(name, 1, Qt::AlignLeft);
+    headerLayout->addWidget(nickName, 1, Qt::AlignLeft);
+    headerLayout->addWidget(groupName, 2, Qt::AlignRight);
+
+    headerWid->setLayout(headerLayout);
+
+    auto vLayout = dynamic_cast<QVBoxLayout*>(centralWid->getStackedWidget()->widget(1)->layout());
+    vLayout->insertWidget(0, headerWid);
 }
 
 void GroupMgrDialog::slotAddGroupClicked()
@@ -90,9 +143,23 @@ void GroupMgrDialog::slotAddGroupClicked()
 void GroupMgrDialog::slotNavigationClicked(ElaNavigationType::NavigationNodeType nodeType,
                                            QString nodeKey, bool isRouteBack)
 {
-    if (nodeType == ElaNavigationType::FooterNode &&
-        nodeKey == _addGroupKey)
+    if (nodeType == ElaNavigationType::FooterNode)
     {
-        _addGroupDialog->open();
+        if (nodeKey == _addGroupKey) {
+            _addGroupDialog->open();
+        }
     }
+    else if (nodeType == ElaNavigationType::PageNode) {
+        for (auto widget : _otherGroups) {
+            if (widget->property("ElaPageKey").toString() == nodeKey) {
+                QString groupName = widget->property("GroupName").toString();
+                qDebug() << "clicked group: " << groupName;
+            }
+        }
+    }
+}
+
+void GroupMgrDialog::slotClickedRadioBtn()
+{
+    _groupList->setAllChecked(_allRadioBtn->isChecked());
 }

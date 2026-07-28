@@ -13,12 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(/utf-8)
 
 # 查找Qt5
-find_package(Qt5 REQUIRED COMPONENTS Widgets WidgetsPrivate)
-find_package(Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets WidgetsPrivate)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 # 查找ElaWidgetTools
@@ -28,10 +23,12 @@ find_package(ElaWidgetTools REQUIRED)
 
 # 收集源文件
 file(GLOB ORIGIN *.cpp *.h)
-file(GLOB COMPONENTS COMPONENTS/*.h COMPONENTS/*.cpp)
-file(GLOB CONTROLS COMPONENTS/CONTROLS/*.h COMPONENTS/CONTROLS/*.cpp)
-file(GLOB VIEWS COMPONENTS/VIEWS/*.h COMPONENTS/VIEWS/*.cpp)
-file(GLOB GLOBAL GLOBAL/*.h GLOBAL/*.cpp)
+file(GLOB COMPONENTS components/*.h components/*.cpp)
+file(GLOB CONTROLS components/controls/*.h components/controls/*.cpp)
+file(GLOB GLOBAL global/*.h global/*.cpp)
+file(GLOB VIEWS components/views/*.h components/views/*.cpp
+                components/views/settings/*.h components/views/settings/*.cpp
+                components/views/contact/*.h components/views/contact/*.cpp)
 
 set(PROJECT_SOURCES
     ${ORIGIN}
@@ -45,27 +42,13 @@ set(PROJECT_SOURCES
 
 # 创建可执行文件
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
-    components/views/settingspage.h components/views/settingspage.cpp
-    components/views/settings/notifypage.h components/views/settings/notifypage.cpp
-    components/controls/borderwidget.h components/controls/borderwidget.cpp
-    components/views/settings/storagepage.h components/views/settings/storagepage.cpp
-    components/views/settings/basecreateoption.h components/views/settings/basecreateoption.cpp
-    components/views/settings/shorcutkeypage.h components/views/settings/shorcutkeypage.cpp
-    components/views/settings/permissionpage.h components/views/settings/permissionpage.cpp
-    components/views/contact/contactdetailwid.h components/views/contact/contactdetailwid.cpp
-    components/views/contact/groupmgrdialog.h components/views/contact/groupmgrdialog.cpp)
+    components/controls/groupmgrlist.h components/controls/groupmgrlist.cpp)
 
 
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-target_link_libraries(OceanLink PRIVATE Qt5::Core)
-target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
-
 # 链接库
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt5::Core
     Qt5::Widgets
     Qt5::WidgetsPrivate
     Ela::WidgetTools
