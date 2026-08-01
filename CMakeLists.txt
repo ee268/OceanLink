@@ -13,8 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(/utf-8)
 
 # 查找Qt5
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets WidgetsPrivate)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network WidgetsPrivate)
 
 # 查找ElaWidgetTools
 set(ELAWIDGETTOOLS_INSTALL_DIR "D:/1code/ElaWidgetTools/Install/ElaWidgetTools" CACHE PATH "ElaWidgetTools prebuilt installation path")
@@ -29,6 +28,7 @@ file(GLOB GLOBAL global/*.h global/*.cpp)
 file(GLOB VIEWS components/views/*.h components/views/*.cpp
                 components/views/settings/*.h components/views/settings/*.cpp
                 components/views/contact/*.h components/views/contact/*.cpp)
+file(GLOB NETWORK network/*.cpp network/*.h)
 
 set(PROJECT_SOURCES
     ${ORIGIN}
@@ -36,13 +36,13 @@ set(PROJECT_SOURCES
     ${VIEWS}
     ${CONTROLS}
     ${GLOBAL}
+    ${NETWORK}
     OceanLink.qrc
     ./resource/appIcon.rc
 )
 
 # 创建可执行文件
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
-    components/controls/groupmgrlist.h components/controls/groupmgrlist.cpp)
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
 
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
@@ -50,6 +50,7 @@ target_link_libraries(OceanLink PRIVATE Qt5::Widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt5::Core
     Qt5::Widgets
+    Qt5::Network
     Qt5::WidgetsPrivate
     Ela::WidgetTools
 )

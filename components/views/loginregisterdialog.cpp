@@ -4,6 +4,7 @@
 #include "ElaIcon.h"
 #include "ElaText.h"
 #include "ElaCheckBox.h"
+#include "ElaMessageBar.h"
 
 #include "../controls/themecolorbutton.h"
 #include "../controls/icontext.h"
@@ -12,6 +13,10 @@
 #include <QAction>
 #include <QSpacerItem>
 #include <QDebug>
+
+#include "../../network/httpmanager.h"
+
+#include "../../global/global.h"
 
 LoginRegisterDialog::LoginRegisterDialog(QWidget *parent/* = nullptr*/)
     : ElaDialog(parent)
@@ -312,6 +317,10 @@ void LoginRegisterDialog::slotLoginButtonClicked()
 
 void LoginRegisterDialog::slotRegisterButtonClicked()
 {
+    QJsonObject jsonObj;
+    QString url = GateServer_URL;
+    QString route = "/get_verifyCode";
+
     switch (_curPage) {
     case CurrentPage::Login:
         emit sigRegisterButtonClicked();
@@ -320,6 +329,16 @@ void LoginRegisterDialog::slotRegisterButtonClicked()
 
         break;
     case CurrentPage::Register:
+
+        ElaMessageBar::success(ElaMessageBarType::Top, "成功", "注册完成", 2000, this);
+
+        jsonObj["email"] = "sh33dhl@qq.com";
+
+        HttpManager::getInstance()->postHttpReq(
+            QUrl(url + route),
+            jsonObj,
+            RequestID::ID_GET_VERIFY_CODE,
+            Modules::REGISTER);
         // to do
 
         break;
