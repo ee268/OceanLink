@@ -2,17 +2,14 @@
 
 #include "ElaImageCard.h"
 #include "ElaIcon.h"
-#include "ElaText.h"
 #include "ElaCheckBox.h"
 #include "ElaMessageBar.h"
-
-#include "../controls/themecolorbutton.h"
-#include "../controls/icontext.h"
 
 #include <QVBoxLayout>
 #include <QAction>
 #include <QSpacerItem>
 #include <QDebug>
+#include <QRegularExpression>
 
 #include "../../network/httpmanager.h"
 
@@ -20,6 +17,8 @@
 
 LoginRegisterDialog::LoginRegisterDialog(QWidget *parent/* = nullptr*/)
     : ElaDialog(parent)
+    , _countdown_timer(new QTimer(this))
+    , _countdown(180)
 {
     initDialog();
 
@@ -73,6 +72,93 @@ void LoginRegisterDialog::switchPage(int index)
     group->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
+void LoginRegisterDialog::checkRegisterInfo()
+{
+    connect(_username_edit, &TipLineEdit::sigTextChanged, this, &LoginRegisterDialog::slotUsernameChanged);
+    connect(_email_edit, &TipLineEdit::sigTextChanged, this, &LoginRegisterDialog::slotEmailChanged);
+    connect(_register_pwd_edit, &TipLineEdit::sigTextChanged, this, &LoginRegisterDialog::slotPasswordFormatChanged);
+    connect(_confirm_pwd_edit, &TipLineEdit::sigTextChanged, this, &LoginRegisterDialog::slotConfirmPasswordChanged);
+}
+
+bool LoginRegisterDialog::slotUsernameChanged(const QString& text)
+{
+    int length = text.length();
+    if (length <= 0 || length > 12) {
+        showErrorTip("至少1个字符，不能超过12个字符");
+        return false;
+    }
+    else {
+        showNormalTip();
+        return true;
+    }
+}
+
+bool LoginRegisterDialog::slotEmailChanged(const QString& text)
+{
+    QRegularExpression regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    if (!regex.match(text).hasMatch()) {
+        showErrorTip("请输入有效的邮箱地址");
+        return false;
+    }
+    else {
+        showNormalTip();
+        return true;
+    }
+}
+
+bool LoginRegisterDialog::slotPasswordFormatChanged(const QString& text)
+{
+    QRegularExpression regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#]).{8,16}$");
+    if (!regex.match(text).hasMatch()) {
+        showErrorTip("8到16位，必须包含大小写字母、数字、特殊字符(!@#)");
+        return false;
+    }
+    else {
+        showNormalTip();
+        return true;
+    }
+}
+
+bool LoginRegisterDialog::slotConfirmPasswordChanged(const QString& text)
+{
+    if (text != _register_pwd_edit->text()) {
+        showErrorTip("两次输入的密码不一致");
+        return false;
+    }
+    else {
+        showNormalTip();
+        return true;
+    }
+}
+
+void LoginRegisterDialog::showNormalTip()
+{
+    if (getCurPage() == CurrentPage::Login) {
+        _loginText->setTextColor(QColor());
+        _loginText->setTextColorDark(Qt::white);
+        _loginText->setTextColorLight(Qt::black);
+        _loginText->setText("欢迎回来！请登录您的账户");
+    }
+    else {
+        _registerText->setTextColor(QColor());
+        _registerText->setTextColorDark(Qt::white);
+        _registerText->setTextColorLight(Qt::black);
+        _registerText->setText("创建您的账户，开启高效沟通之旅");
+    }
+}
+
+void LoginRegisterDialog::showErrorTip(const QString &text)
+{
+    if (getCurPage() == CurrentPage::Login) {
+        _loginText->setTextColor(Qt::red);
+        _loginText->setText(text);
+    }
+    else {
+        _registerText->setTextColor(Qt::red);
+        _registerText->setText(text);
+    }
+}
+
 void LoginRegisterDialog::initDialog()
 {
     setFixedSize(400, 560);
@@ -89,9 +175,11 @@ void LoginRegisterDialog::initContent()
 
     QWidget* loginPage = initLoginPage();
     QWidget* registerPage = initRegisterPage();
+    QWidget* verifyCodePage = initVerifyCodePage();
 
     _stackedWid->addWidget(loginPage);
     _stackedWid->addWidget(registerPage);
+    _stackedWid->addWidget(verifyCodePage);
 
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
@@ -101,24 +189,30 @@ void LoginRegisterDialog::initContent()
     _curPage = CurrentPage::Login;
 }
 
+QWidget *LoginRegisterDialog::header()
+{
+    QImage img(":/resource/image/logo/OceanLink.png");
+    double ratio = 0.45;
+    int w = img.width() * ratio;
+    int h = img.height() * ratio;
+    ElaImageCard* logoImg = new ElaImageCard(this);
+    logoImg->setCardImage(img);
+    logoImg->setFixedSize(QSize(w, h));
+
+    return logoImg;
+}
+
 QWidget* LoginRegisterDialog::initLoginPage()
 {
     QWidget* loginWid = new QWidget(this);
     QVBoxLayout* mainLayout = new QVBoxLayout(loginWid);
     int width = this->width() * 0.6;
 
-    QImage img(":/resource/image/logo/OceanLink.png");
-    double ratio = 0.45;
-    int w = img.width() * ratio;
-    int h = img.height() * ratio;
-    ElaImageCard* logoImg = new ElaImageCard(loginWid);
-    logoImg->setCardImage(img);
-    logoImg->setFixedSize(QSize(w, h));
-
-    ElaText* loginText = new ElaText(loginWid);
-    loginText->setText("欢迎回来！请登录您的账户");
-    loginText->setTextStyle(ElaTextType::BodyStrong);
-    loginText->setIsWrapAnywhere(false);
+    _loginText = new IconText(loginWid);
+    _loginText->setText("欢迎回来！请登录您的账户");
+    _loginText->setPixelSize(12);
+    _loginText->setTextColorDark(Qt::white);
+    _loginText->setTextColorLight(Qt::black);
 
     //账号输入框
     _account_edit = new TipLineEdit(loginWid);
@@ -137,7 +231,6 @@ QWidget* LoginRegisterDialog::initLoginPage()
     _login_pwd_edit->getLineEdit()->setIsClearButtonEnable(false);
     _login_pwd_edit->setFixedWidth(width);
     _login_pwd_edit->setEchoModePassword();
-
 
     QWidget* forgetWid = new QWidget(loginWid);
     forgetWid->setFixedWidth(width);
@@ -183,9 +276,9 @@ QWidget* LoginRegisterDialog::initLoginPage()
 
     mainLayout->setContentsMargins(0, 10, 0, 0);
     mainLayout->setSpacing(5);
-    mainLayout->addWidget(logoImg, 0, Qt::AlignCenter);
+    mainLayout->addWidget(header(), 0, Qt::AlignCenter);
     mainLayout->addSpacerItem(new QSpacerItem(0, 120, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    mainLayout->addWidget(loginText, 1, Qt::AlignCenter);
+    mainLayout->addWidget(_loginText, 1, Qt::AlignCenter);
     mainLayout->addWidget(_account_edit, 2, Qt::AlignCenter);
     mainLayout->addWidget(_login_pwd_edit, 3, Qt::AlignCenter);
     mainLayout->addWidget(forgetWid, 4, Qt::AlignCenter);
@@ -204,18 +297,11 @@ QWidget* LoginRegisterDialog::initRegisterPage()
     QWidget* registerWid = new QWidget(this);
     QVBoxLayout* mainLayout = new QVBoxLayout(registerWid);
 
-    QImage img(":/resource/image/logo/OceanLink.png");
-    double ratio = 0.45;
-    int w = img.width() * ratio;
-    int h = img.height() * ratio;
-    ElaImageCard* logoImg = new ElaImageCard(registerWid);
-    logoImg->setCardImage(img);
-    logoImg->setFixedSize(QSize(w, h));
-
-    ElaText* loginText = new ElaText(registerWid);
-    loginText->setText("创建您的账户，开启高效沟通之旅");
-    loginText->setTextStyle(ElaTextType::BodyStrong);
-    loginText->setIsWrapAnywhere(false);
+    _registerText = new IconText(registerWid);
+    _registerText->setText("创建您的账户，开启高效沟通之旅");
+    _registerText->setPixelSize(12);
+    _registerText->setTextColorDark(Qt::white);
+    _registerText->setTextColorLight(Qt::black);
 
     //昵称输入框
     _username_edit = new TipLineEdit(registerWid);
@@ -281,9 +367,9 @@ QWidget* LoginRegisterDialog::initRegisterPage()
 
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(15);
-    mainLayout->addWidget(logoImg, 0, Qt::AlignCenter);
+    mainLayout->addWidget(header(), 0, Qt::AlignCenter);
     mainLayout->addSpacerItem(new QSpacerItem(0, 100, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    mainLayout->addWidget(loginText, 1, Qt::AlignCenter);
+    mainLayout->addWidget(_registerText, 1, Qt::AlignCenter);
     mainLayout->addWidget(_username_edit, 2, Qt::AlignCenter);
     mainLayout->addWidget(_register_pwd_edit, 3, Qt::AlignCenter);
     mainLayout->addWidget(_confirm_pwd_edit, 4, Qt::AlignCenter);
@@ -294,7 +380,85 @@ QWidget* LoginRegisterDialog::initRegisterPage()
 
     registerWid->setLayout(mainLayout);
 
+    checkRegisterInfo();
+
     return registerWid;
+}
+
+QWidget *LoginRegisterDialog::initVerifyCodePage()
+{
+    QWidget* wid = new QWidget(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(wid);
+    mainLayout->setSpacing(20);
+
+    int width = this->width() * 0.6;
+
+    IconText* tip = new IconText(wid);
+    tip->setText("验证码已发送至您的邮箱，三分钟内有效");
+    tip->setPixelSize(12);
+    tip->setTextColorDark(Qt::white);
+    tip->setTextColorLight(Qt::black);
+
+    QWidget* subWid = new QWidget(wid);
+    QHBoxLayout* subLayout = new QHBoxLayout(subWid);
+    subLayout->setContentsMargins(0, 0, 0, 0);
+    subLayout->setSpacing(8);
+
+    ElaLineEdit* codeEdit = new ElaLineEdit(subWid);
+    codeEdit->addAction(ElaIcon::getInstance()->getElaIcon(ElaIconType::ShieldCheck),
+                                       QLineEdit::LeadingPosition);
+    codeEdit->setPlaceholderText("输入验证码");
+    codeEdit->setIsClearButtonEnable(false);
+    codeEdit->setFixedWidth((width - 8) * 0.7);
+
+    _sendCodeButton = new ThemeColorButton("重新发送", subWid);\
+    _sendCodeButton->setBorderRadius(8);
+    _sendCodeButton->setFixedWidth((width - 8) * 0.3);
+    QFont f = _sendCodeButton->font();
+    f.setPixelSize(13);
+    _sendCodeButton->setFont(f);
+    _sendCodeButton->setDisabled(true);
+
+    connect(_countdown_timer, &QTimer::timeout, this, [this](){
+        if (_countdown == 0) {
+            _countdown_timer->stop();
+            _sendCodeButton->setDisabled(false);
+            _sendCodeButton->setText("重新发送");
+            return;
+        }
+
+        _sendCodeButton->setText(QString::number(_countdown));
+        _countdown--;
+    });
+
+    subLayout->addWidget(codeEdit);
+    subLayout->addWidget(_sendCodeButton);
+    subWid->setLayout(subLayout);
+
+    ThemeColorButton* confirmButton = new ThemeColorButton("确认", wid);
+    confirmButton->setFixedWidth(width);
+    confirmButton->setBorderRadius(8);
+
+    ElaPushButton* backButton = new ElaPushButton("返回", wid);
+    backButton->setFixedWidth(width);
+    backButton->setBorderRadius(8);
+
+    connect(backButton, &ElaPushButton::clicked, this, [this](){
+        _countdown_timer->stop();
+        switchPage(CurrentPage::Register);
+    });
+
+    mainLayout->addWidget(header(), 1, Qt::AlignHCenter);
+    mainLayout->addStretch(1);
+    mainLayout->addWidget(tip, 0, Qt::AlignHCenter);
+    mainLayout->addWidget(subWid, 0, Qt::AlignHCenter);
+    mainLayout->addStretch(1);
+    mainLayout->addWidget(confirmButton, 0, Qt::AlignHCenter);
+    mainLayout->addWidget(backButton, 0, Qt::AlignHCenter);
+    mainLayout->addStretch(1);
+    wid->setLayout(mainLayout);
+
+    return wid;
 }
 
 void LoginRegisterDialog::slotLoginButtonClicked()
@@ -317,29 +481,49 @@ void LoginRegisterDialog::slotLoginButtonClicked()
 
 void LoginRegisterDialog::slotRegisterButtonClicked()
 {
-    QJsonObject jsonObj;
-    QString url = GateServer_URL;
-    QString route = "/get_verifyCode";
-
     switch (_curPage) {
     case CurrentPage::Login:
         emit sigRegisterButtonClicked();
         _curPage = CurrentPage::Register;
+
+        _username_edit->getLineEdit()->clear();
+        _email_edit->getLineEdit()->clear();
+        _register_pwd_edit->getLineEdit()->clear();
+        _confirm_pwd_edit->getLineEdit()->clear();
+
         switchPage(CurrentPage::Register);
 
         break;
     case CurrentPage::Register:
 
-        ElaMessageBar::success(ElaMessageBarType::Top, "成功", "注册完成", 2000, this);
+        //test
+        _username_edit->getLineEdit()->setText("yonghu123");
+        _email_edit->getLineEdit()->setText("sh33dhl@qq.com");
+        _register_pwd_edit->getLineEdit()->setText("8794772034Gkl@");
+        _confirm_pwd_edit->getLineEdit()->setText("8794772034Gkl@");
 
-        jsonObj["email"] = "sh33dhl@qq.com";
+        if (slotUsernameChanged(_username_edit->text()) &&
+            slotEmailChanged(_email_edit->text()) &&
+            slotPasswordFormatChanged(_register_pwd_edit->text()) &&
+            slotConfirmPasswordChanged(_confirm_pwd_edit->text()))
+        {
+            switchPage(CurrentPage::VerifyCode);
+            _countdown_timer->start(1000);
+            _countdown = 180;
+            _sendCodeButton->setDisabled(true);
 
-        HttpManager::getInstance()->postHttpReq(
-            QUrl(url + route),
-            jsonObj,
-            RequestID::ID_GET_VERIFY_CODE,
-            Modules::REGISTER);
-        // to do
+            QJsonObject jsonObj;
+            QString route = "/get_verifyCode";
+            ElaMessageBar::success(ElaMessageBarType::Top, "成功", "验证码已发送", 2000, this);
+
+            jsonObj["email"] = _email_edit->text();
+
+            HttpManager::getInstance()->postHttpReq(
+                QUrl(ServerUrl + route),
+                jsonObj,
+                RequestID::ID_GET_VERIFY_CODE,
+                Modules::REGISTER);
+        }
 
         break;
     default:

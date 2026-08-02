@@ -3,10 +3,11 @@
 
 #define PROJECT_VERSION "0.1"
 #define PROjECT_NAME "OceanLink"
-#define GateServer_URL "http://127.0.0.1:8080"
 
 #include <QString>
 #include <QPixmap>
+
+const QString ServerUrl = "http://127.0.0.1:8080";
 
 //好友审核状态
 enum FriendNotifyStatus {

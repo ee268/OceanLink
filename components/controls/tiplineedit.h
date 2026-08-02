@@ -16,6 +16,7 @@ public:
     void setTipText(const QString& text);
     void setPixelSize(int size);
 
+    QString text() const;
     ElaLineEdit* getLineEdit() const;
 
     void setEchoModePassword();
@@ -26,6 +27,9 @@ private:
 private:
     IconText* _tipText;
     ElaLineEdit* _lineEdit;
+
+signals:
+    void sigTextChanged(const QString& text);
 };
 
 #endif // TIPLINEEDIT_H

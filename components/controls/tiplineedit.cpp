@@ -28,6 +28,11 @@ void TipLineEdit::setPixelSize(int size)
     _tipText->setPixelSize(size);
 }
 
+QString TipLineEdit::text() const
+{
+    return _lineEdit->text();
+}
+
 ElaLineEdit *TipLineEdit::getLineEdit() const
 {
     return _lineEdit;
@@ -35,6 +40,8 @@ ElaLineEdit *TipLineEdit::getLineEdit() const
 
 void TipLineEdit::setEchoModePassword()
 {
+    _lineEdit->setEchoMode(QLineEdit::Password);
+
     QAction* eyeAction = _lineEdit->addAction(
         ElaIcon::getInstance()->getElaIcon(ElaIconType::Eye),
         QLineEdit::TrailingPosition
@@ -43,6 +50,8 @@ void TipLineEdit::setEchoModePassword()
 
     connect(_lineEdit, &QLineEdit::textChanged, this, [=](const QString& text) {
         eyeAction->setVisible(text.length() > 0);
+
+        emit sigTextChanged(text);
     });
 
     connect(eyeAction, &QAction::triggered, this, [=]() {
