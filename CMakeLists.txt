@@ -42,7 +42,8 @@ set(PROJECT_SOURCES
 )
 
 # 创建可执行文件
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
+    global/global.cpp)
 
 
 target_link_libraries(OceanLink PRIVATE Qt5::Widgets)

@@ -10,6 +10,7 @@
 #include <QSpacerItem>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QJsonDocument>
 
 #include "../../network/httpmanager.h"
 
@@ -23,6 +24,8 @@ LoginRegisterDialog::LoginRegisterDialog(QWidget *parent/* = nullptr*/)
     initDialog();
 
     initContent();
+
+    initHandler();
 }
 
 LoginRegisterDialog::~LoginRegisterDialog() {}
@@ -131,6 +134,32 @@ bool LoginRegisterDialog::slotConfirmPasswordChanged(const QString& text)
     }
 }
 
+void LoginRegisterDialog::slotConfirmRegBtnClicked()
+{
+    QString code = _codeEdit->text();
+    if (code.isEmpty()) {
+        ElaMessageBar::error(ElaMessageBarType::Top, "错误", "请输入验证码", 2000, this);
+        return;
+    }
+
+    QJsonObject jsonObj;
+    jsonObj["username"] = _username_edit->text();
+    jsonObj["email"] = _email_edit->text();
+    jsonObj["password"] = xorString(_register_pwd_edit->text());
+    jsonObj["verifyCode"] = code;
+
+    // HttpManager::getInstance()->postHttpReq()
+}
+
+void LoginRegisterDialog::slotRegModFinished(RequestID id, QString res, ErrorCodes ec)
+{
+    if (_handlers.find(id) == _handlers.end()) {
+        return;
+    }
+
+    _handlers[id](res, ec);
+}
+
 void LoginRegisterDialog::showNormalTip()
 {
     if (getCurPage() == CurrentPage::Login) {
@@ -144,6 +173,35 @@ void LoginRegisterDialog::showNormalTip()
         _registerText->setTextColorDark(Qt::white);
         _registerText->setTextColorLight(Qt::black);
         _registerText->setText("创建您的账户，开启高效沟通之旅");
+    }
+}
+
+void LoginRegisterDialog::sendVeriyCode()
+{
+    _verifyCodeText->setText("正在发送验证码");
+    _verifyCodeText->setTextColor(QColor("#1a6bf8"));
+
+    //test    
+    _username_edit->getLineEdit()->setText("yonghu123");
+    _email_edit->getLineEdit()->setText("sh33dhl@qq.com");
+    _register_pwd_edit->getLineEdit()->setText("8794772034Gkl@");
+    _confirm_pwd_edit->getLineEdit()->setText("8794772034Gkl@");
+
+    if (slotUsernameChanged(_username_edit->text()) &&
+        slotEmailChanged(_email_edit->text()) &&
+        slotPasswordFormatChanged(_register_pwd_edit->text()) &&
+        slotConfirmPasswordChanged(_confirm_pwd_edit->text()))
+    {
+        QJsonObject jsonObj;
+        QString route = "/get_verifyCode";
+
+        jsonObj["email"] = _email_edit->text();
+
+        HttpManager::getInstance()->postHttpReq(
+            QUrl(ServerUrl + route),
+            jsonObj,
+            RequestID::ID_GET_VERIFY_CODE,
+            Modules::REGISTER);
     }
 }
 
@@ -161,7 +219,8 @@ void LoginRegisterDialog::showErrorTip(const QString &text)
 
 void LoginRegisterDialog::initDialog()
 {
-    setFixedSize(400, 560);
+    setMinimumSize(400, 560);
+    setMaximumSize(400, 560);
     setWindowButtonFlags(ElaAppBarType::MinimizeButtonHint | ElaAppBarType::CloseButtonHint);
     setSizeGripEnabled(false);
     setIsFixedSize(true);
@@ -393,23 +452,22 @@ QWidget *LoginRegisterDialog::initVerifyCodePage()
 
     int width = this->width() * 0.6;
 
-    IconText* tip = new IconText(wid);
-    tip->setText("验证码已发送至您的邮箱，三分钟内有效");
-    tip->setPixelSize(12);
-    tip->setTextColorDark(Qt::white);
-    tip->setTextColorLight(Qt::black);
+    _verifyCodeText = new IconText(wid);
+    _verifyCodeText->setText("正在发送验证码");
+    _verifyCodeText->setPixelSize(12);
+    _verifyCodeText->setTextColor(QColor("#1a6bf8"));
 
     QWidget* subWid = new QWidget(wid);
     QHBoxLayout* subLayout = new QHBoxLayout(subWid);
     subLayout->setContentsMargins(0, 0, 0, 0);
     subLayout->setSpacing(8);
 
-    ElaLineEdit* codeEdit = new ElaLineEdit(subWid);
-    codeEdit->addAction(ElaIcon::getInstance()->getElaIcon(ElaIconType::ShieldCheck),
+    _codeEdit = new ElaLineEdit(subWid);
+    _codeEdit->addAction(ElaIcon::getInstance()->getElaIcon(ElaIconType::ShieldCheck),
                                        QLineEdit::LeadingPosition);
-    codeEdit->setPlaceholderText("输入验证码");
-    codeEdit->setIsClearButtonEnable(false);
-    codeEdit->setFixedWidth((width - 8) * 0.7);
+    _codeEdit->setPlaceholderText("输入验证码");
+    _codeEdit->setIsClearButtonEnable(false);
+    _codeEdit->setFixedWidth((width - 8) * 0.7);
 
     _sendCodeButton = new ThemeColorButton("重新发送", subWid);\
     _sendCodeButton->setBorderRadius(8);
@@ -418,6 +476,10 @@ QWidget *LoginRegisterDialog::initVerifyCodePage()
     f.setPixelSize(13);
     _sendCodeButton->setFont(f);
     _sendCodeButton->setDisabled(true);
+
+    connect(_sendCodeButton, &ThemeColorButton::clicked, this, [this](){
+        sendVeriyCode();
+    });
 
     connect(_countdown_timer, &QTimer::timeout, this, [this](){
         if (_countdown == 0) {
@@ -431,13 +493,15 @@ QWidget *LoginRegisterDialog::initVerifyCodePage()
         _countdown--;
     });
 
-    subLayout->addWidget(codeEdit);
+    subLayout->addWidget(_codeEdit);
     subLayout->addWidget(_sendCodeButton);
     subWid->setLayout(subLayout);
 
     ThemeColorButton* confirmButton = new ThemeColorButton("确认", wid);
     confirmButton->setFixedWidth(width);
     confirmButton->setBorderRadius(8);
+
+    connect(confirmButton, &ThemeColorButton::clicked, this, &LoginRegisterDialog::slotConfirmRegBtnClicked);
 
     ElaPushButton* backButton = new ElaPushButton("返回", wid);
     backButton->setFixedWidth(width);
@@ -450,7 +514,7 @@ QWidget *LoginRegisterDialog::initVerifyCodePage()
 
     mainLayout->addWidget(header(), 1, Qt::AlignHCenter);
     mainLayout->addStretch(1);
-    mainLayout->addWidget(tip, 0, Qt::AlignHCenter);
+    mainLayout->addWidget(_verifyCodeText, 0, Qt::AlignHCenter);
     mainLayout->addWidget(subWid, 0, Qt::AlignHCenter);
     mainLayout->addStretch(1);
     mainLayout->addWidget(confirmButton, 0, Qt::AlignHCenter);
@@ -459,6 +523,41 @@ QWidget *LoginRegisterDialog::initVerifyCodePage()
     wid->setLayout(mainLayout);
 
     return wid;
+}
+
+void LoginRegisterDialog::initHandler()
+{
+    _handlers[RequestID::ID_GET_VERIFY_CODE] = [this](QString res, ErrorCodes ec){
+        QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
+        QJsonObject jsonObj = doc.object();
+
+        if (ec != ErrorCodes::Success ||
+            !jsonObj.contains("error") ||
+            jsonObj["error"].toInt() != ErrorCodes::Success)
+        {
+            _verifyCodeText->setText("请重新发送");
+            _verifyCodeText->setTextColor(Qt::red);
+            ElaMessageBar::error(ElaMessageBarType::Top, "错误", "验证发送失败", 2000, this);
+            _countdown_timer->stop();
+            _sendCodeButton->setDisabled(false);
+            return;
+        }
+
+        _verifyCodeText->setText("验证码已发送至您的邮箱，三分钟内有效");
+        _verifyCodeText->setTextColorDark(Qt::white);
+        _verifyCodeText->setTextColorLight(Qt::black);
+        ElaMessageBar::success(ElaMessageBarType::Top, "成功", "验证码已发送", 2000, this);
+
+        qDebug() << res;
+        qDebug() << ec;
+
+        _countdown_timer->start(1000);
+        _countdown = 180;
+        _sendCodeButton->setDisabled(true);
+    };
+
+    connect(HttpManager::getInstance(), &HttpManager::sigRegModFinished,
+            this, &LoginRegisterDialog::slotRegModFinished);
 }
 
 void LoginRegisterDialog::slotLoginButtonClicked()
@@ -495,35 +594,8 @@ void LoginRegisterDialog::slotRegisterButtonClicked()
 
         break;
     case CurrentPage::Register:
-
-        //test
-        _username_edit->getLineEdit()->setText("yonghu123");
-        _email_edit->getLineEdit()->setText("sh33dhl@qq.com");
-        _register_pwd_edit->getLineEdit()->setText("8794772034Gkl@");
-        _confirm_pwd_edit->getLineEdit()->setText("8794772034Gkl@");
-
-        if (slotUsernameChanged(_username_edit->text()) &&
-            slotEmailChanged(_email_edit->text()) &&
-            slotPasswordFormatChanged(_register_pwd_edit->text()) &&
-            slotConfirmPasswordChanged(_confirm_pwd_edit->text()))
-        {
-            switchPage(CurrentPage::VerifyCode);
-            _countdown_timer->start(1000);
-            _countdown = 180;
-            _sendCodeButton->setDisabled(true);
-
-            QJsonObject jsonObj;
-            QString route = "/get_verifyCode";
-            ElaMessageBar::success(ElaMessageBarType::Top, "成功", "验证码已发送", 2000, this);
-
-            jsonObj["email"] = _email_edit->text();
-
-            HttpManager::getInstance()->postHttpReq(
-                QUrl(ServerUrl + route),
-                jsonObj,
-                RequestID::ID_GET_VERIFY_CODE,
-                Modules::REGISTER);
-        }
+        switchPage(CurrentPage::VerifyCode);
+        sendVeriyCode();
 
         break;
     default:

@@ -9,6 +9,9 @@
 
 const QString ServerUrl = "http://127.0.0.1:8080";
 
+//密码xor加密
+extern std::function<QString(QString)> xorString;
+
 //好友审核状态
 enum FriendNotifyStatus {
     Passed = 1,         //已通过
@@ -44,8 +47,11 @@ enum Modules {
 
 //错误码
 enum ErrorCodes {
-    NoError,
-    NetworkError
+    Success,
+    NetworkError = 2001
 };
+
+//服务器回包调用
+using RspHandler = std::function<void(QString, ErrorCodes)>;
 
 #endif // GLOBAL_H

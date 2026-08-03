@@ -7,10 +7,13 @@
 #include "../controls/tiplineedit.h"
 #include "../controls/themecolorbutton.h"
 
+#include "../../global/global.h"
+
 #include <QStackedWidget>
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
 #include <QTimer>
+#include <QMap>
 
 class LoginRegisterDialog : public ElaDialog
 {
@@ -38,12 +41,16 @@ private:
     QWidget* initRegisterPage();
     QWidget* initVerifyCodePage();
 
+    void initHandler();
+
     void switchPage(int index);
 
     void checkRegisterInfo();
 
     void showErrorTip(const QString& text);
     void showNormalTip();
+
+    void sendVeriyCode();
 
 private:
     QStackedWidget* _stackedWid;
@@ -61,10 +68,15 @@ private:
     TipLineEdit* _confirm_pwd_edit;
 
     //验证码
+    IconText* _verifyCodeText;
     ThemeColorButton* _sendCodeButton;
+    ElaLineEdit* _codeEdit;
 
     QTimer* _countdown_timer;
     int _countdown;
+
+    //服务器回包响应
+    QMap<RequestID, RspHandler> _handlers;
 
 public slots:
     void slotLoginButtonClicked();
@@ -74,6 +86,10 @@ public slots:
     bool slotEmailChanged(const QString& text);
     bool slotPasswordFormatChanged(const QString& text);
     bool slotConfirmPasswordChanged(const QString& text);
+
+    void slotConfirmRegBtnClicked();
+
+    void slotRegModFinished(RequestID id, QString res, ErrorCodes ec);
 
 signals:
     void sigLoginSuccess();

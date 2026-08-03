@@ -23,7 +23,7 @@ void HttpManager::postHttpReq(QUrl url, QJsonObject json, RequestID req_id, Modu
         }
 
         QString res = reply->readAll();
-        emit sigHttpFinished(req_id, mod, "", ErrorCodes::NoError);
+        emit sigHttpFinished(req_id, mod, res, ErrorCodes::Success);
         reply->deleteLater();
         return;
     });
