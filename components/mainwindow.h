@@ -8,7 +8,7 @@
 #include "views/aboutpage.h"
 #include "views/collectpage.h"
 #include "controls/moreoptpopup.h"
-#include "views/loginregisterdialog.h"
+#include "views/authpage.h"
 #include "controls/confirmdialog.h"
 #include "views/settingspage.h"
 
@@ -30,8 +30,8 @@ protected:
 private:
     ConfirmDialog* _closeConfirmDialog;
     ConfirmDialog* _logoutConfirmDialog;
-    LoginRegisterDialog* _loginRegisterDialog;
 
+    AuthPage* _authPage;
     ChatPage* _chatPage;
     ContactPage* _contactPage;
     PostPage* _postPage;
@@ -49,13 +49,9 @@ private:
 
 public slots:
     void slotLoginSuccess();
-    void slotLoginFailed();
 
     void slotMoreOptionClicked(const QString& key);
     void slotSwitchToLogin();
-
-    void slotShowRegisterPage();
-    void slotShowLoginPage();
 
     void slotShowConfirmDialog();
 };

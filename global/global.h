@@ -37,12 +37,13 @@ Q_DECLARE_METATYPE(CollectType)
 
 //请求类别
 enum RequestID {
-    ID_GET_VERIFY_CODE    //请求验证码
+    ID_GET_VERIFY_CODE,    //请求验证码
+    ID_REG_USER            //请求注册
 };
 
 //发出请求的模块
 enum Modules {
-    REGISTER,      //注册模块
+    Auth,      //登录、注册
 };
 
 //错误码

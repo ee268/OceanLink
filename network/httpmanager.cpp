@@ -37,7 +37,7 @@ void HttpManager::slotHttpFinished(RequestID id, Modules mod, QString res, Error
 {
     switch(mod)
     {
-    case Modules::REGISTER:
+    case Modules::Auth:
         emit sigRegModFinished(id, res, ec);
         break;
     }

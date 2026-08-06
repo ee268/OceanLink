@@ -3,13 +3,14 @@
 
 #include <QScreen>
 #include <QApplication>
+#include <QDebug>
 
 #include "../components/controls/confirmdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : ElaWindow(parent)
-    , _loginRegisterDialog(new LoginRegisterDialog(nullptr))
-    , _settingsPage(new SettingsPage(nullptr))
+    , _authPage(new AuthPage)
+    , _settingsPage(new SettingsPage)
 {
     initWindow();
 
@@ -18,10 +19,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    if (_loginRegisterDialog) {
-        _loginRegisterDialog->close();
-        delete _loginRegisterDialog;
-        _loginRegisterDialog = nullptr;
+    if (_authPage) {
+        _authPage->close();
+        delete _authPage;
+        _authPage = nullptr;
     }
 
     if (_settingsPage) {
@@ -52,15 +53,10 @@ void MainWindow::initWindow()
                          ElaAppBarType::CloseButtonHint);
 
     this->hide();
-    _loginRegisterDialog->open();
+    _authPage->open();
 
-    connect(_loginRegisterDialog, &LoginRegisterDialog::sigLoginSuccess, this, &MainWindow::slotLoginSuccess);
-    connect(_loginRegisterDialog, &LoginRegisterDialog::sigLoginFailed, this, &MainWindow::slotLoginFailed);
-    connect(_loginRegisterDialog, &LoginRegisterDialog::closeButtonClicked, this, &MainWindow::close);
-    connect(_loginRegisterDialog, &LoginRegisterDialog::sigRegisterButtonClicked,
-            this, &MainWindow::slotShowRegisterPage);
-    connect(_loginRegisterDialog, &LoginRegisterDialog::sigLoginButtonClicked,
-            this, &MainWindow::slotShowLoginPage);
+    connect(_authPage, &AuthPage::sigLoginSuccess, this, &MainWindow::slotLoginSuccess);
+    connect(_authPage, &AuthPage::closeButtonClicked, this, &MainWindow::close);
 }
 
 void MainWindow::initContent()
@@ -115,13 +111,8 @@ void MainWindow::initContent()
 
 void MainWindow::slotLoginSuccess()
 {
-    _loginRegisterDialog->close();
+    _authPage->close();
     this->show();
-}
-
-void MainWindow::slotLoginFailed()
-{
-
 }
 
 void MainWindow::slotMoreOptionClicked(const QString& key)
@@ -136,18 +127,8 @@ void MainWindow::slotMoreOptionClicked(const QString& key)
 
 void MainWindow::slotSwitchToLogin()
 {
-    _loginRegisterDialog->open();
+    _authPage->open();
     this->hide();
-}
-
-void MainWindow::slotShowRegisterPage()
-{
-    // to do
-}
-
-void MainWindow::slotShowLoginPage()
-{
-    //to do
 }
 
 void MainWindow::slotShowConfirmDialog()
@@ -157,8 +138,8 @@ void MainWindow::slotShowConfirmDialog()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (_loginRegisterDialog) {
-        _loginRegisterDialog->close();
+    if (_authPage) {
+        _authPage->close();
     }
     if (_settingsPage) {
         _settingsPage->close();

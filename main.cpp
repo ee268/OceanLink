@@ -1,6 +1,7 @@
 #include "components/mainwindow.h"
 
 #include <QApplication>
+#include <QDebug>
 
 #include "ElaApplication.h"
 
